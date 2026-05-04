@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import base64
 import requests
 from flask import Flask, request, jsonify, render_template
@@ -231,14 +232,21 @@ def call_gemini(text_input, image_b64=None, image_type=None, profile=None, app_h
         "contents": [{"role": "user", "parts": parts}],
         "generationConfig": {"maxOutputTokens": 1500},
     }
-    resp = requests.post(
-        GEMINI_URL,
-        params={"key": GEMINI_API_KEY},
-        headers={"Content-Type": "application/json"},
-        json=payload,
-        timeout=60,
-    )
-    resp.raise_for_status()
+
+    for attempt in range(3):
+        resp = requests.post(
+            GEMINI_URL,
+            params={"key": GEMINI_API_KEY},
+            headers={"Content-Type": "application/json"},
+            json=payload,
+            timeout=60,
+        )
+        if resp.status_code == 429 and attempt < 2:
+            time.sleep(5 * (attempt + 1))
+            continue
+        resp.raise_for_status()
+        break
+
     data = resp.json()
     raw = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
     return raw
@@ -283,6 +291,8 @@ def analyze():
         result = parse_response(raw)
         return jsonify({"ok": True, "result": result, "raw": raw})
     except requests.HTTPError as e:
+        if e.response.status_code == 429:
+            return jsonify({"error": "Limite de requisições atingido. Aguarde alguns segundos e tente novamente."}), 429
         return jsonify({"error": f"Erro da API Gemini: {e.response.status_code}"}), 502
     except Exception as e:
         return jsonify({"error": str(e)}), 500
