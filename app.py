@@ -7,8 +7,9 @@ from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
 # ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
 
@@ -204,7 +205,7 @@ def parse_response(text):
 
 # ─── API CALL ────────────────────────────────────────────────────────────────
 
-def call_claude(text_input, image_b64=None, image_type=None, profile=None, app_hint=None):
+def call_gemini(text_input, image_b64=None, image_type=None, profile=None, app_hint=None):
     context = ""
     if profile:
         if profile.get("name"):
@@ -220,33 +221,26 @@ def call_claude(text_input, image_b64=None, image_type=None, profile=None, app_h
     if context:
         full_text += f"\n\n---{context}"
 
-    user_content = []
+    parts = []
     if image_b64 and image_type:
-        user_content.append({
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": image_type,
-                "data": image_b64,
-            }
-        })
-    user_content.append({"type": "text", "text": full_text})
+        parts.append({"inline_data": {"mime_type": image_type, "data": image_b64}})
+    parts.append({"text": full_text})
 
-    headers = {
-        "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-    }
     payload = {
-        "model": "claude-opus-4-5",
-        "max_tokens": 1500,
-        "system": SYSTEM_PROMPT,
-        "messages": [{"role": "user", "content": user_content}],
+        "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+        "contents": [{"role": "user", "parts": parts}],
+        "generationConfig": {"maxOutputTokens": 1500},
     }
-    resp = requests.post(ANTHROPIC_URL, headers=headers, json=payload, timeout=60)
+    resp = requests.post(
+        GEMINI_URL,
+        params={"key": GEMINI_API_KEY},
+        headers={"Content-Type": "application/json"},
+        json=payload,
+        timeout=60,
+    )
     resp.raise_for_status()
     data = resp.json()
-    raw = "".join(b.get("text", "") for b in data.get("content", []))
+    raw = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
     return raw
 
 
@@ -259,8 +253,8 @@ def index():
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    if not ANTHROPIC_API_KEY:
-        return jsonify({"error": "ANTHROPIC_API_KEY não configurada."}), 500
+    if not GEMINI_API_KEY:
+        return jsonify({"error": "GEMINI_API_KEY não configurada."}), 500
 
     text_input = request.form.get("text", "").strip()
     app_hint = request.form.get("app_hint", "auto")
@@ -285,11 +279,11 @@ def analyze():
         return jsonify({"error": "Envie texto ou imagem."}), 400
 
     try:
-        raw = call_claude(text_input, image_b64, image_type, profile, app_hint)
+        raw = call_gemini(text_input, image_b64, image_type, profile, app_hint)
         result = parse_response(raw)
         return jsonify({"ok": True, "result": result, "raw": raw})
     except requests.HTTPError as e:
-        return jsonify({"error": f"Erro da API Anthropic: {e.response.status_code}"}), 502
+        return jsonify({"error": f"Erro da API Gemini: {e.response.status_code}"}), 502
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

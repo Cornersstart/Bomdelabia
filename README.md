@@ -7,8 +7,9 @@ App de análise comportamental e geração de mensagens para Tinder, Instagram e
 ## ⚡ Rodar localmente
 
 ```bash
-# 1. Clone ou extraia o projeto
-cd reply-coach
+# 1. Clone o projeto
+git clone https://github.com/cornersstart/bomdelabia
+cd bomdelabia
 
 # 2. Crie o ambiente virtual
 python -m venv venv
@@ -23,7 +24,7 @@ cp .env.example .env
 # Edite o .env e coloque sua ANTHROPIC_API_KEY
 
 # 5. Rode
-ANTHROPIC_API_KEY=sk-ant-... python app.py
+GEMINI_API_KEY=AIza... python app.py
 
 # Acesse: http://localhost:5000
 ```
@@ -36,7 +37,7 @@ ANTHROPIC_API_KEY=sk-ant-... python app.py
 2. No Render → New Web Service → conecte o repo
 3. Runtime: **Docker**
 4. Em **Environment Variables** adicione:
-   - `ANTHROPIC_API_KEY` = sua chave
+   - `GEMINI_API_KEY` = sua chave
 5. Deploy → pronto
 
 ---
@@ -55,8 +56,8 @@ ANTHROPIC_API_KEY=sk-ant-... python app.py
 
 ---
 
-## 🔑 Como pegar a ANTHROPIC_API_KEY
+## 🔑 Como pegar a GEMINI_API_KEY
 
-1. Acesse https://console.anthropic.com
-2. API Keys → Create Key
+1. Acesse https://aistudio.google.com/app/apikey
+2. Create API Key
 3. Cole no `.env` ou na variável de ambiente do Render
