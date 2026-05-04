@@ -1,0 +1,9 @@
+.git
+.env
+*.zip
+__pycache__
+*.pyc
+*.pyo
+.env.example
+README.md
+render.yaml

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reply Coach</title>
+  <style>
+    :root {
+      --bg: #070709;
+      --surface: #0f0f14;
+      --card: #13131a;
+      --border: #1c1c28;
+      --text: #e6e6f0;
+      --muted: #4a4a62;
+      --accent: #7c6af7;
+      --tinder: #ff4458;
+      --instagram: #c13584;
+      --whatsapp: #25d366;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: Georgia, 'Times New Roman', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 80px;
+    }
+    .container { width: 100%; max-width: 580px; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 28px; }
+    .header-tag {
+      font-size: 9px; letter-spacing: 5px; color: var(--muted);
+      font-family: monospace; margin-bottom: 10px;
+    }
+    h1 { font-size: clamp(24px, 5vw, 36px); font-weight: 400; letter-spacing: -0.5px; color: #fff; }
+    h1 span { font-size: 0.4em; color: var(--muted); font-family: monospace; letter-spacing: 2px; margin-left: 8px; }
+    .subtitle { color: var(--muted); margin-top: 8px; font-size: 13px; font-style: italic; line-height: 1.5; }
+
+    /* Profile Panel */
+    .profile-toggle {
+      width: 100%; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 11px 16px; color: var(--text); cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: monospace; font-size: 12px; margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+    .profile-toggle.open { border-radius: 12px 12px 0 0; border-bottom-color: transparent; }
+    .profile-body {
+      background: var(--surface); border: 1px solid #2e2e42;
+      border-top: none; border-radius: 0 0 12px 12px;
+      padding: 16px; margin-top: -20px; margin-bottom: 20px; display: none;
+    }
+    .profile-body.open { display: block; }
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+    /* App selector */
+    .app-selector { display: flex; gap: 8px; margin-bottom: 18px; }
+    .app-btn {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); border-radius: 10px; padding: 9px 4px;
+      font-size: 11px; cursor: pointer; font-family: monospace;
+      transition: all 0.2s; text-align: center;
+    }
+    .app-btn.active-auto   { border-color: var(--accent); color: var(--accent); background: #7c6af718; }
+    .app-btn.active-tinder { border-color: var(--tinder); color: var(--tinder); background: #ff445818; }
+    .app-btn.active-instagram { border-color: var(--instagram); color: var(--instagram); background: #c1358418; }
+    .app-btn.active-whatsapp  { border-color: var(--whatsapp); color: var(--whatsapp); background: #25d36618; }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed #1e1e2c; border-radius: 14px;
+      cursor: pointer; background: var(--surface); transition: all 0.2s;
+      min-height: 100px; display: flex; align-items: center;
+      justify-content: center; overflow: hidden; position: relative;
+      margin-bottom: 14px;
+    }
+    .upload-zone:hover { border-color: #3a3a5a; }
+    .upload-zone.drag { border-color: var(--accent); background: #7c6af708; }
+    .upload-zone img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+    .upload-inner { text-align: center; padding: 20px; }
+    .upload-icon { font-size: 24px; margin-bottom: 6px; }
+    .upload-label { font-size: 12px; color: #555; font-family: monospace; }
+    .upload-sub { font-size: 10px; color: #333; margin-top: 3px; font-family: monospace; }
+    .upload-replace {
+      position: absolute; top: 8px; right: 8px; background: #000b;
+      color: #aaa; font-size: 11px; padding: 3px 10px; border-radius: 8px;
+      font-family: monospace;
+    }
+
+    /* Textarea */
+    .section-label {
+      font-size: 9px; color: var(--muted); letter-spacing: 2px;
+      font-family: monospace; margin-bottom: 8px; display: block;
+      text-transform: uppercase;
+    }
+    textarea, input, select {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 13px;
+      padding: 12px 14px; outline: none; font-family: monospace;
+      transition: border-color 0.2s; resize: vertical; line-height: 1.6;
+    }
+    input, select { resize: none; }
+    textarea:focus, input:focus, select:focus { border-color: var(--accent); }
+
+    /* Button */
+    .btn-analyze {
+      width: 100%; padding: 14px 0; margin-top: 12px;
+      border: none; border-radius: 12px; font-weight: 800;
+      font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase;
+      font-family: monospace; cursor: pointer; transition: all 0.3s;
+      color: #000;
+    }
+    .btn-analyze:disabled { background: #111 !important; color: #333 !important; cursor: not-allowed; box-shadow: none !important; }
+
+    /* Result */
+    .result { margin-top: 28px; animation: fadeUp 0.4s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; } }
+
+    .mode-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      border-radius: 99px; padding: 6px 16px; margin-bottom: 22px;
+      font-size: 11px; font-weight: 700; font-family: monospace; letter-spacing: 2px;
+    }
+
+    .info-block { margin-bottom: 16px; }
+    .info-block-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+    .info-block-label {
+      font-size: 9px; letter-spacing: 2.5px; color: var(--muted);
+      font-family: monospace; text-transform: uppercase; white-space: nowrap;
+    }
+    .info-block-line { flex: 1; height: 1px; background: var(--border); }
+    .info-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+    }
+    .info-card p { color: #ccc; font-size: 13px; line-height: 1.7; }
+
+    /* Message cards */
+    .msg-card {
+      background: var(--card); border-radius: 14px; padding: 18px 20px;
+      margin-bottom: 10px; position: relative; overflow: hidden;
+    }
+    .msg-card-bar {
+      position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+      border-radius: 4px 0 0 4px;
+    }
+    .msg-card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px; gap: 8px;
+    }
+    .msg-card-label {
+      font-size: 10px; letter-spacing: 2px; font-family: monospace;
+      text-transform: uppercase; display: flex; align-items: center; gap: 8px;
+    }
+    .badge-principal {
+      font-size: 9px; letter-spacing: 1px; color: #000; border-radius: 20px;
+      padding: 2px 8px; font-family: monospace; font-weight: 800;
+    }
+    .msg-text {
+      color: var(--text); font-size: 15px; line-height: 1.65; font-style: italic;
+    }
+    .copy-btn {
+      background: #ffffff08; border: 1px solid #2a2a3a; color: #555;
+      border-radius: 6px; padding: 3px 11px; font-size: 11px;
+      cursor: pointer; font-family: monospace; transition: all 0.2s; flex-shrink: 0;
+    }
+    .copy-btn.ok { background: #22c55e18; border-color: #22c55e55; color: #22c55e; }
+
+    /* Não enviar */
+    .no-send-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: #1a0808; border: 1px solid #2a1010;
+      border-radius: 8px; padding: 8px 12px; margin-bottom: 6px;
+    }
+    .no-send-x { color: #ef4444; font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+    .no-send-text { color: #c08080; font-size: 13px; font-style: italic; line-height: 1.5; }
+
+    /* Spinner */
+    .spinner-wrap { text-align: center; padding: 44px 0; }
+    .spinner {
+      width: 34px; height: 34px; border: 2px solid #1a1a28;
+      border-top: 2px solid var(--accent); border-radius: 50%;
+      animation: spin 0.75s linear infinite; margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-label { color: var(--muted); font-size: 12px; font-family: monospace; }
+
+    /* Error */
+    .error-box {
+      margin-top: 14px; background: #180404; border: 1px solid #440000;
+      border-radius: 10px; padding: 12px 16px; color: #ff7070;
+      font-size: 12px; font-family: monospace;
+    }
+
+    /* Saved toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #22c55e; color: #000; font-family: monospace; font-weight: 700;
+      font-size: 12px; padding: 10px 20px; border-radius: 99px; letter-spacing: 1px;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-tag">SOCIAL INTELLIGENCE ENGINE</div>
+    <h1>Reply Coach <span>V3</span></h1>
+    <p class="subtitle">Tinder · Instagram · WhatsApp — detecção automática.</p>
+  </div>
+
+  <!-- Profile Panel -->
+  <button class="profile-toggle" id="profileToggle" onclick="toggleProfile()">
+    <span id="profileLabel">👤 <span style="color:#4a4a62">Salvar perfil da pessoa (opcional)</span></span>
+    <span style="font-size:9px;color:#4a4a62">▼</span>
+  </button>
+  <div class="profile-body" id="profileBody">
+    <div class="profile-grid">
+      <div>
+        <span class="section-label">Nome</span>
+        <input id="pName" type="text" placeholder="Ju, Ana, Laís..." oninput="updateProfileLabel()" />
+      </div>
+      <div>
+        <span class="section-label">App</span>
+        <select id="pApp" oninput="updateProfileLabel()">
+          <option value="">Detectar auto</option>
+          <option value="Tinder">Tinder</option>
+          <option value="Instagram">Instagram</option>
+          <option value="WhatsApp">WhatsApp</option>
+        </select>
+      </div>
+    </div>
+    <span class="section-label">Contexto (jeito de ser, interesses, onde se conheceram)</span>
+    <textarea id="pNotes" rows="2" placeholder="Ex: trabalha em moda, adora viajar, conheceram num evento..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="saveProfile()" id="saveBtn" style="
+        flex:1;background:#1a2818;border:1px solid #2a3828;color:#4a7a44;
+        border-radius:8px;padding:9px 0;font-size:12px;font-family:monospace;
+        cursor:pointer;font-weight:700;
+      ">Salvar perfil</button>
+      <button onclick="clearProfile()" id="clearBtn" style="
+        display:none;background:#180808;border:1px solid #2a1010;color:#663333;
+        border-radius:8px;padding:9px 14px;font-size:11px;
+        font-family:monospace;cursor:pointer;
+      ">Limpar</button>
+    </div>
+  </div>
+
+  <!-- App Selector -->
+  <span class="section-label">APP (ou deixe detectar automaticamente)</span>
+  <div class="app-selector">
+    <button class="app-btn active-auto" data-app="auto" onclick="selectApp('auto')">🤖 Auto</button>
+    <button class="app-btn" data-app="tinder" onclick="selectApp('tinder')">❤️ Tinder</button>
+    <button class="app-btn" data-app="instagram" onclick="selectApp('instagram')">📷 Instagram</button>
+    <button class="app-btn" data-app="whatsapp" onclick="selectApp('whatsapp')">💬 WhatsApp</button>
+  </div>
+
+  <!-- Upload -->
+  <span class="section-label">UPLOAD (print do perfil / story / conversa)</span>
+  <div class="upload-zone" id="uploadZone"
+    onclick="document.getElementById('fileInput').click()"
+    ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+    <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="onFileChange(event)" />
+    <div class="upload-inner" id="uploadInner">
+      <div class="upload-icon">📎</div>
+      <div class="upload-label">Arraste print / foto ou clique</div>
+      <div class="upload-sub">JPG · PNG · WEBP</div>
+    </div>
+  </div>
+
+  <!-- Text Input -->
+  <span class="section-label" style="margin-top:4px">OU DESCREVA / COLE A CONVERSA</span>
+  <textarea id="textInput" rows="5"
+    placeholder="Exemplos:&#10;• Tinder: bio dela + o que tem nas fotos&#10;• Instagram: story que ela postou&#10;• WhatsApp: últimas mensagens trocadas"
+    oninput="updateBtn()"></textarea>
+
+  <!-- Analyze Button -->
+  <button class="btn-analyze" id="analyzeBtn" onclick="analyze()" disabled>
+    ⚡ Analisar & gerar mensagens
+  </button>
+
+  <!-- Error -->
+  <div class="error-box" id="errorBox" style="display:none"></div>
+
+  <!-- Spinner -->
+  <div class="spinner-wrap" id="spinner" style="display:none">
+    <div class="spinner" id="spinnerEl"></div>
+    <div class="spinner-label">Analisando perfil...</div>
+  </div>
+
+  <!-- Result -->
+  <div class="result" id="result" style="display:none"></div>
+
+</div>
+
+<div class="toast" id="toast">✓ Copiado!</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+
+let selectedApp = "auto";
+let imageFile = null;
+let profile = {};
+
+const MODE_COLORS = {
+  tinder: "#ff4458",
+  instagram: "#c13584",
+  whatsapp: "#25d366",
+};
+const MODE_LABELS = {
+  tinder: { emoji: "❤️", label: "TINDER" },
+  instagram: { emoji: "📷", label: "INSTAGRAM" },
+  whatsapp: { emoji: "💬", label: "WHATSAPP" },
+};
+
+// ─── LOCAL STORAGE (PROFILE) ─────────────────────────────────────────────────
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem("rc-profile");
+    if (raw) {
+      profile = JSON.parse(raw);
+      document.getElementById("pName").value = profile.name || "";
+      document.getElementById("pApp").value = profile.app || "";
+      document.getElementById("pNotes").value = profile.notes || "";
+      updateProfileLabel();
+    }
+  } catch {}
+}
+
+function saveProfile() {
+  profile = {
+    name: document.getElementById("pName").value.trim(),
+    app: document.getElementById("pApp").value,
+    notes: document.getElementById("pNotes").value.trim(),
+  };
+  localStorage.setItem("rc-profile", JSON.stringify(profile));
+  updateProfileLabel();
+  const btn = document.getElementById("saveBtn");
+  btn.textContent = "✓ Salvo!";
+  btn.style.color = "#22c55e";
+  btn.style.borderColor = "#22c55e44";
+  setTimeout(() => {
+    btn.textContent = "Salvar perfil";
+    btn.style.color = "#4a7a44";
+    btn.style.borderColor = "#2a3828";
+    toggleProfile();
+  }, 1400);
+}
+
+function clearProfile() {
+  profile = {};
+  document.getElementById("pName").value = "";
+  document.getElementById("pApp").value = "";
+  document.getElementById("pNotes").value = "";
+  localStorage.removeItem("rc-profile");
+  updateProfileLabel();
+}
+
+function updateProfileLabel() {
+  const name = document.getElementById("pName").value.trim();
+  const app = document.getElementById("pApp").value;
+  const lbl = document.getElementById("profileLabel");
+  const clearBtn = document.getElementById("clearBtn");
+  if (name) {
+    lbl.innerHTML = `👤 Perfil salvo: <strong style="color:#fff">${name}</strong>${app ? ` <span style="color:#4a4a62">· ${app}</span>` : ""}`;
+    clearBtn.style.display = "inline-block";
+  } else {
+    lbl.innerHTML = `👤 <span style="color:#4a4a62">Salvar perfil da pessoa (opcional)</span>`;
+    clearBtn.style.display = "none";
+  }
+}
+
+function toggleProfile() {
+  const body = document.getElementById("profileBody");
+  const toggle = document.getElementById("profileToggle");
+  const open = body.classList.contains("open");
+  body.classList.toggle("open");
+  toggle.classList.toggle("open");
+}
+
+// ─── APP SELECTOR ─────────────────────────────────────────────────────────────
+
+function selectApp(app) {
+  selectedApp = app;
+  document.querySelectorAll(".app-btn").forEach(b => {
+    b.className = "app-btn";
+    if (b.dataset.app === app) b.classList.add(`active-${app}`);
+  });
+  updateBtn();
+}
+
+// ─── UPLOAD ──────────────────────────────────────────────────────────────────
+
+function onDragOver(e) { e.preventDefault(); document.getElementById("uploadZone").classList.add("drag"); }
+function onDragLeave() { document.getElementById("uploadZone").classList.remove("drag"); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById("uploadZone").classList.remove("drag");
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+}
+function onFileChange(e) { if (e.target.files[0]) handleFile(e.target.files[0]); }
+
+function handleFile(file) {
+  if (!file.type.startsWith("image/")) return;
+  imageFile = file;
+  const url = URL.createObjectURL(file);
+  const zone = document.getElementById("uploadZone");
+  zone.innerHTML = `
+    <img src="${url}" alt="upload" />
+    <div class="upload-replace">trocar</div>
+  `;
+  zone.onclick = () => document.getElementById("fileInput").click();
+  updateBtn();
+}
+
+// ─── BUTTON STATE ─────────────────────────────────────────────────────────────
+
+function updateBtn() {
+  const text = document.getElementById("textInput").value.trim();
+  const btn = document.getElementById("analyzeBtn");
+  const can = !!text || !!imageFile;
+  btn.disabled = !can;
+  const color = selectedApp !== "auto" ? MODE_COLORS[selectedApp] : "#7c6af7";
+  btn.style.background = can ? `linear-gradient(135deg, ${color}, ${color}aa)` : "";
+  btn.style.boxShadow = can ? `0 4px 24px ${color}33` : "none";
+}
+
+// ─── ANALYZE ─────────────────────────────────────────────────────────────────
+
+async function analyze() {
+  const text = document.getElementById("textInput").value.trim();
+  if (!text && !imageFile) return;
+
+  setLoading(true);
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("result").style.display = "none";
+
+  const fd = new FormData();
+  if (text) fd.append("text", text);
+  fd.append("app_hint", selectedApp);
+  fd.append("profile", JSON.stringify(profile));
+  if (imageFile) fd.append("image", imageFile);
+
+  try {
+    const res = await fetch("/analyze", { method: "POST", body: fd });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Erro desconhecido.");
+    renderResult(data.result);
+  } catch (e) {
+    document.getElementById("errorBox").textContent = e.message;
+    document.getElementById("errorBox").style.display = "block";
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(on) {
+  document.getElementById("spinner").style.display = on ? "block" : "none";
+  document.getElementById("analyzeBtn").disabled = on;
+  const color = selectedApp !== "auto" ? MODE_COLORS[selectedApp] : "#7c6af7";
+  document.getElementById("spinnerEl").style.borderTopColor = color;
+  document.getElementById("analyzeBtn").textContent = on ? "⏳ Analisando..." : "⚡ Analisar & gerar mensagens";
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+
+function renderResult(r) {
+  const color = MODE_COLORS[r.modo] || "#7c6af7";
+  const meta = MODE_LABELS[r.modo] || { emoji: "💬", label: r.modo.toUpperCase() };
+
+  let html = `
+    <div class="mode-badge" style="background:${color}18;border:1px solid ${color}44;color:${color}">
+      <span>${meta.emoji}</span> ${meta.label} DETECTADO
+    </div>
+  `;
+
+  if (r.analise) html += infoBlock("📊 Análise do perfil", r.analise, color);
+  if (r.leitura) html += infoBlock("🧠 Leitura social", r.leitura, color);
+  if (r.estrategia) html += infoBlock("🎯 Estratégia", `<em>${esc(r.estrategia)}</em>`, color);
+
+  html += `
+    <div class="info-block">
+      <div class="info-block-header">
+        <span class="info-block-label">💬 Mensagens</span>
+        <div class="info-block-line"></div>
+      </div>
+      ${msgCard("Segura", "🛡️", "#4a9eff", r.segura, false)}
+      ${msgCard("Estratégica", "⚡", color, r.estrategica, true)}
+      ${msgCard("Diferente", "😏", "#a855f7", r.diferente, false)}
+    </div>
+  `;
+
+  if (r.nao_enviar && r.nao_enviar.length > 0) {
+    html += `
+      <div class="info-block">
+        <div class="info-block-header">
+          <span class="info-block-label">🚫 Não enviar</span>
+          <div class="info-block-line"></div>
+        </div>
+        <div class="info-card">
+          ${r.nao_enviar.map(x => `
+            <div class="no-send-item">
+              <span class="no-send-x">✗</span>
+              <span class="no-send-text">"${esc(x)}"</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  if (r.aprendizado) html += infoBlock("🧬 Micro aprendizado", r.aprendizado, "#7c6af7");
+
+  const resultEl = document.getElementById("result");
+  resultEl.innerHTML = html;
+  resultEl.style.display = "block";
+}
+
+function infoBlock(label, content, color) {
+  return `
+    <div class="info-block">
+      <div class="info-block-header">
+        <span class="info-block-label">${label}</span>
+        <div class="info-block-line" style="background:linear-gradient(90deg,${color}33,transparent)"></div>
+      </div>
+      <div class="info-card"><p>${typeof content === "string" ? esc(content) : content}</p></div>
+    </div>
+  `;
+}
+
+function msgCard(label, icon, color, msg, isPrincipal) {
+  const id = "msg_" + Math.random().toString(36).slice(2);
+  return `
+    <div class="msg-card" style="border:1px solid ${color}30">
+      <div class="msg-card-bar" style="background:${color}"></div>
+      <div class="msg-card-header">
+        <div class="msg-card-label" style="color:${color}">
+          ${icon} ${label}
+          ${isPrincipal ? `<span class="badge-principal" style="background:${color}">PRINCIPAL</span>` : ""}
+        </div>
+        ${msg ? `<button class="copy-btn" onclick="copyMsg('${id}', this)">${esc(msg) !== "" ? "copiar" : ""}</button>` : ""}
+      </div>
+      <div class="msg-text" id="${id}">${msg ? `"${esc(msg)}"` : '<span style="color:#4a4a62">—</span>'}</div>
+    </div>
+  `;
+}
+
+function copyMsg(id, btn) {
+  const el = document.getElementById(id);
+  const text = el.textContent.replace(/^"|"$/g, "").trim();
+  navigator.clipboard.writeText(text);
+  btn.textContent = "✓";
+  btn.classList.add("ok");
+  showToast();
+  setTimeout(() => { btn.textContent = "copiar"; btn.classList.remove("ok"); }, 1800);
+}
+
+function showToast() {
+  const t = document.getElementById("toast");
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>");
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+loadProfile();
+updateBtn();
+</script>
+
+</body>
+</html>
