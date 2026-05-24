@@ -198,15 +198,30 @@ APRENDIZADO:
 # ─── PARSER ──────────────────────────────────────────────────────────────────
 
 def parse_response(text):
+    QUOTES = '"""\'“”'
+
+    def strip_md(s):
+        s = re.sub(r'\*\*(.+?)\*\*', r'\1', s, flags=re.DOTALL)
+        s = re.sub(r'\*(.+?)\*',     r'\1', s, flags=re.DOTALL)
+        # remove trailing markdown separators/headers that bleed into fields
+        s = re.sub(r'\s*\n\s*-{3,}\s*\n?\s*#{0,2}\s*$', '', s)
+        s = re.sub(r'\s*-{3,}\s*$', '', s)
+        s = re.sub(r'\s*#{1,3}\s*$', '', s)
+        return s.strip()
+
     def get(pattern, default=""):
         m = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
-        return m.group(1).strip() if m else default
+        return strip_md(m.group(1)) if m else default
 
-    def get_quoted(pattern):
-        m = re.search(pattern, text, re.IGNORECASE)
+    def get_msg(label_re):
+        # Handles: "msg", **"msg"**, "**msg**", **msg**
+        m = re.search(
+            rf'{label_re}\s*\n?\s*\*{{0,2}}\s*[{QUOTES}]?(.*?)[{QUOTES}]?\s*\*{{0,2}}\s*(?:\n|$)',
+            text, re.IGNORECASE
+        )
         if not m:
             return ""
-        return m.group(1).strip().strip('"').strip('“').strip('”')
+        return strip_md(m.group(1)).strip(QUOTES).strip()
 
     modo_raw = get(r"MODO:\s*([\s\S]*?)(?=ANÁLISE|$)").lower()
     modo = "instagram"
@@ -217,19 +232,19 @@ def parse_response(text):
 
     nao_enviar_raw = get(r"NÃO ENVIAR:\s*([\s\S]*?)(?=APRENDIZADO:|$)")
     nao_enviar = [
-        re.sub(r'^[-•*]\s*', '', line).strip().strip('"').strip('“').strip('”')
+        strip_md(re.sub(r'^[-•*]\s*', '', line)).strip(QUOTES).strip()
         for line in nao_enviar_raw.split("\n")
-        if line.strip() and re.match(r'^[-•*""“]', line.strip())
+        if line.strip() and re.match(r'^[-•*""*]', line.strip())
     ]
 
     return {
         "modo": modo,
-        "analise": get(r"ANÁLISE DO PERFIL:\s*([\s\S]*?)(?=LEITURA SOCIAL:|$)"),
-        "leitura": get(r"LEITURA SOCIAL:\s*([\s\S]*?)(?=ESTRATÉGIA:|$)"),
+        "analise":    get(r"ANÁLISE DO PERFIL:\s*([\s\S]*?)(?=LEITURA SOCIAL:|$)"),
+        "leitura":    get(r"LEITURA SOCIAL:\s*([\s\S]*?)(?=ESTRATÉGIA:|$)"),
         "estrategia": get(r"ESTRATÉGIA:\s*([\s\S]*?)(?=MENSAGENS:|$)"),
-        "segura": get_quoted(r'1\.\s*SEGURA:\s*["“]?([^"\n“”]+)["”]?'),
-        "estrategica": get_quoted(r'2\.\s*ESTRATÉGICA:\s*["“]?([^"\n“”]+)["”]?'),
-        "diferente": get_quoted(r'3\.\s*DIFERENTE:\s*["“]?([^"\n“”]+)["”]?'),
+        "segura":      get_msg(r'1\.\s*SEGURA:'),
+        "estrategica": get_msg(r'2\.\s*ESTRATÉGICA:'),
+        "diferente":   get_msg(r'3\.\s*DIFERENTE:'),
         "nao_enviar": nao_enviar,
         "aprendizado": get(r"APRENDIZADO:\s*([\s\S]*?)$"),
     }

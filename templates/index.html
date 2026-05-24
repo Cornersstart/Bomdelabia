@@ -30,14 +30,12 @@
     }
     .container { width: 100%; max-width: 580px; }
 
-    /* Header */
     .header { text-align: center; margin-bottom: 28px; }
     .header-tag { font-size: 9px; letter-spacing: 5px; color: var(--muted); font-family: monospace; margin-bottom: 10px; }
     h1 { font-size: clamp(24px, 5vw, 36px); font-weight: 400; letter-spacing: -0.5px; color: #fff; }
     h1 span { font-size: 0.4em; color: var(--muted); font-family: monospace; letter-spacing: 2px; margin-left: 8px; }
     .subtitle { color: var(--muted); margin-top: 8px; font-size: 13px; font-style: italic; line-height: 1.5; }
 
-    /* Profile Panel */
     .profile-toggle {
       width: 100%; background: var(--surface);
       border: 1px solid var(--border); border-radius: 12px;
@@ -55,14 +53,12 @@
     .profile-body.open { display: block; }
     .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 
-    /* Section label */
     .section-label {
       font-size: 9px; color: var(--muted); letter-spacing: 2px;
       font-family: monospace; margin-bottom: 8px; display: block;
       text-transform: uppercase;
     }
 
-    /* App selector */
     .app-selector { display: flex; gap: 8px; margin-bottom: 18px; }
     .app-btn {
       flex: 1; background: var(--surface); border: 1px solid var(--border);
@@ -75,7 +71,6 @@
     .app-btn.active-instagram { border-color: var(--instagram); color: var(--instagram); background: #c1358418; }
     .app-btn.active-whatsapp  { border-color: var(--whatsapp);  color: var(--whatsapp);  background: #25d36618; }
 
-    /* Memory selector */
     .memory-selector { display: flex; gap: 8px; margin-bottom: 18px; }
     .mem-btn {
       flex: 1; background: var(--surface); border: 1px solid var(--border);
@@ -85,7 +80,6 @@
     }
     .mem-btn.active { border-color: var(--accent); color: var(--accent); background: #7c6af718; }
 
-    /* Instagram knows toggle */
     .knows-selector { display: flex; gap: 8px; margin-bottom: 18px; }
     .knows-btn {
       flex: 1; background: var(--surface); border: 1px solid var(--border);
@@ -95,7 +89,6 @@
     }
     .knows-btn.active { border-color: var(--instagram); color: var(--instagram); background: #c1358418; }
 
-    /* Upload zone */
     .upload-zone {
       border: 2px dashed #1e1e2c; border-radius: 14px;
       cursor: pointer; background: var(--surface); transition: all 0.2s;
@@ -110,7 +103,6 @@
     .upload-label { font-size: 12px; color: #555; font-family: monospace; }
     .upload-sub { font-size: 10px; color: #333; margin-top: 3px; font-family: monospace; }
 
-    /* Thumbnails */
     .img-thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; min-height: 0; }
     .img-thumb {
       position: relative; width: 70px; height: 70px; border-radius: 10px;
@@ -131,7 +123,6 @@
     }
     .add-img-btn:hover { border-color: #4a4a6a; color: #666; }
 
-    /* Textarea / inputs */
     textarea, input, select {
       width: 100%; background: var(--surface); border: 1px solid var(--border);
       border-radius: 10px; color: var(--text); font-size: 13px;
@@ -141,7 +132,6 @@
     input, select { resize: none; }
     textarea:focus, input:focus, select:focus { border-color: var(--accent); }
 
-    /* Button */
     .btn-analyze {
       width: 100%; padding: 14px 0; margin-top: 12px;
       border: none; border-radius: 12px; font-weight: 800;
@@ -150,7 +140,6 @@
     }
     .btn-analyze:disabled { background: #111 !important; color: #333 !important; cursor: not-allowed; box-shadow: none !important; }
 
-    /* Result */
     .result { margin-top: 28px; animation: fadeUp 0.4s ease; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; } }
 
@@ -167,7 +156,6 @@
     .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
     .info-card p { color: #ccc; font-size: 13px; line-height: 1.7; }
 
-    /* Message cards */
     .msg-card { background: var(--card); border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; position: relative; overflow: hidden; }
     .msg-card-bar { position: absolute; top: 0; left: 0; width: 3px; height: 100%; border-radius: 4px 0 0 4px; }
     .msg-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
@@ -181,21 +169,17 @@
     }
     .copy-btn.ok { background: #22c55e18; border-color: #22c55e55; color: #22c55e; }
 
-    /* Não enviar */
     .no-send-item { display: flex; align-items: flex-start; gap: 10px; background: #1a0808; border: 1px solid #2a1010; border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; }
     .no-send-x { color: #ef4444; font-size: 12px; flex-shrink: 0; margin-top: 1px; }
     .no-send-text { color: #c08080; font-size: 13px; font-style: italic; line-height: 1.5; }
 
-    /* Spinner */
     .spinner-wrap { text-align: center; padding: 44px 0; }
     .spinner { width: 34px; height: 34px; border: 2px solid #1a1a28; border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; margin: 0 auto 14px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner-label { color: var(--muted); font-size: 12px; font-family: monospace; }
 
-    /* Error */
     .error-box { margin-top: 14px; background: #180404; border: 1px solid #440000; border-radius: 10px; padding: 12px 16px; color: #ff7070; font-size: 12px; font-family: monospace; }
 
-    /* Toast */
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       background: #22c55e; color: #000; font-family: monospace; font-weight: 700;
@@ -209,14 +193,12 @@
 
 <div class="container">
 
-  <!-- Header -->
   <div class="header">
     <div class="header-tag">SOCIAL INTELLIGENCE ENGINE</div>
     <h1>Reply Coach <span>V4</span></h1>
     <p class="subtitle">Tinder · Instagram · WhatsApp — psicologia aplicada.</p>
   </div>
 
-  <!-- Profile Panel -->
   <button class="profile-toggle" id="profileToggle" onclick="toggleProfile()">
     <span id="profileLabel">👤 <span style="color:#4a4a62">Salvar perfil da pessoa (opcional)</span></span>
     <span style="font-size:9px;color:#4a4a62">▼</span>
@@ -245,7 +227,6 @@
     </div>
   </div>
 
-  <!-- App Selector -->
   <span class="section-label">APP (ou deixe detectar automaticamente)</span>
   <div class="app-selector">
     <button class="app-btn active-auto" data-app="auto"      onclick="selectApp('auto')">🤖 Auto</button>
@@ -254,7 +235,6 @@
     <button class="app-btn"             data-app="whatsapp"  onclick="selectApp('whatsapp')">💬 WhatsApp</button>
   </div>
 
-  <!-- Memory Mode -->
   <span class="section-label">MOMENTO DA CONVERSA</span>
   <div class="memory-selector">
     <button class="mem-btn active" data-mem="primeiro-contato" onclick="selectMemory('primeiro-contato')">👋<br>Primeiro<br>contato</button>
@@ -262,7 +242,6 @@
     <button class="mem-btn"        data-mem="reaquecendo"      onclick="selectMemory('reaquecendo')">🔥<br>Reaquecer</button>
   </div>
 
-  <!-- Instagram: ela me conhece? -->
   <div id="igKnowsSection" style="display:none">
     <span class="section-label">ELA JÁ TE CONHECE?</span>
     <div class="knows-selector">
@@ -271,7 +250,6 @@
     </div>
   </div>
 
-  <!-- Multi-Upload -->
   <span class="section-label">UPLOADS (prints do perfil / story / conversa)</span>
   <div class="upload-zone" id="uploadZone"
     onclick="triggerUpload()"
@@ -285,27 +263,22 @@
   </div>
   <div class="img-thumbs" id="imgThumbs"></div>
 
-  <!-- Text Input -->
   <span class="section-label" style="margin-top:4px">OU DESCREVA / COLE A CONVERSA</span>
   <textarea id="textInput" rows="5"
     placeholder="Exemplos:&#10;• Tinder: bio dela + o que tem nas fotos&#10;• Instagram: story que ela postou&#10;• WhatsApp: últimas mensagens trocadas"
     oninput="updateBtn()"></textarea>
 
-  <!-- Analyze Button -->
   <button class="btn-analyze" id="analyzeBtn" onclick="analyze()" disabled>
-    ⚡ Analisar & gerar mensagens
+    ⚡ Analisar &amp; gerar mensagens
   </button>
 
-  <!-- Error -->
   <div class="error-box" id="errorBox" style="display:none"></div>
 
-  <!-- Spinner -->
   <div class="spinner-wrap" id="spinner" style="display:none">
     <div class="spinner" id="spinnerEl"></div>
     <div class="spinner-label">Analisando perfil...</div>
   </div>
 
-  <!-- Result -->
   <div class="result" id="result" style="display:none"></div>
 
 </div>
@@ -313,12 +286,10 @@
 <div class="toast" id="toast">✓ Copiado!</div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────────────────────────
-
 let selectedApp    = "auto";
 let selectedMemory = "primeiro-contato";
 let igKnowsMe      = false;
-let imageFiles     = [];   // array of File
+let imageFiles     = [];
 let profile        = {};
 
 const MAX_IMAGES = 4;
@@ -329,8 +300,6 @@ const MODE_LABELS = {
   instagram: { emoji: "📷", label: "INSTAGRAM" },
   whatsapp:  { emoji: "💬", label: "WHATSAPP" },
 };
-
-// ─── PROFILE ─────────────────────────────────────────────────────────────────
 
 function loadProfile() {
   try {
@@ -393,8 +362,6 @@ function toggleProfile() {
   document.getElementById("profileToggle").classList.toggle("open");
 }
 
-// ─── APP SELECTOR ─────────────────────────────────────────────────────────────
-
 function selectApp(app) {
   selectedApp = app;
   document.querySelectorAll(".app-btn").forEach(b => {
@@ -405,8 +372,6 @@ function selectApp(app) {
   updateBtn();
 }
 
-// ─── MEMORY SELECTOR ─────────────────────────────────────────────────────────
-
 function selectMemory(mem) {
   selectedMemory = mem;
   document.querySelectorAll(".mem-btn").forEach(b => {
@@ -414,16 +379,12 @@ function selectMemory(mem) {
   });
 }
 
-// ─── INSTAGRAM KNOWS ─────────────────────────────────────────────────────────
-
 function selectKnows(knows) {
   igKnowsMe = knows;
   document.querySelectorAll(".knows-btn").forEach(b => {
     b.classList.toggle("active", b.dataset.knows === String(knows));
   });
 }
-
-// ─── MULTI-UPLOAD ─────────────────────────────────────────────────────────────
 
 function triggerUpload() { document.getElementById("fileInput").click(); }
 
@@ -478,7 +439,7 @@ function renderThumbs() {
     container.appendChild(addBtn);
   }
 
-  const zone = document.getElementById("uploadZone");
+  const zone  = document.getElementById("uploadZone");
   const inner = document.getElementById("uploadInner");
   if (imageFiles.length > 0) {
     zone.style.minHeight = "48px";
@@ -493,8 +454,6 @@ function renderThumbs() {
   }
 }
 
-// ─── BUTTON STATE ─────────────────────────────────────────────────────────────
-
 function updateBtn() {
   const text = document.getElementById("textInput").value.trim();
   const btn  = document.getElementById("analyzeBtn");
@@ -504,8 +463,6 @@ function updateBtn() {
   btn.style.background = can ? `linear-gradient(135deg, ${color}, ${color}aa)` : "";
   btn.style.boxShadow  = can ? `0 4px 24px ${color}33` : "none";
 }
-
-// ─── ANALYZE ─────────────────────────────────────────────────────────────────
 
 async function analyze() {
   const text = document.getElementById("textInput").value.trim();
@@ -544,8 +501,6 @@ function setLoading(on) {
   document.getElementById("analyzeBtn").textContent = on ? "⏳ Analisando..." : "⚡ Analisar & gerar mensagens";
 }
 
-// ─── RENDER ──────────────────────────────────────────────────────────────────
-
 function renderResult(r) {
   const color = MODE_COLORS[r.modo] || "#7c6af7";
   const meta  = MODE_LABELS[r.modo] || { emoji: "💬", label: r.modo.toUpperCase() };
@@ -556,9 +511,9 @@ function renderResult(r) {
     </div>
   `;
 
-  if (r.analise)    html += infoBlock("📊 Análise do perfil",  r.analise,    color);
-  if (r.leitura)    html += infoBlock("🧠 Leitura social",     r.leitura,    color);
-  if (r.estrategia) html += infoBlock("🎯 Estratégia",         `<em>${esc(r.estrategia)}</em>`, color);
+  if (r.analise)    html += infoBlock("📊 Análise do perfil", r.analise,    color);
+  if (r.leitura)    html += infoBlock("🧠 Leitura social",    r.leitura,    color);
+  if (r.estrategia) html += infoBlock("🎯 Estratégia",        r.estrategia, color, true);
 
   html += `
     <div class="info-block">
@@ -599,14 +554,14 @@ function renderResult(r) {
   resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function infoBlock(label, content, color) {
+function infoBlock(label, content, color, italic = false) {
   return `
     <div class="info-block">
       <div class="info-block-header">
         <span class="info-block-label">${label}</span>
         <div class="info-block-line" style="background:linear-gradient(90deg,${color}33,transparent)"></div>
       </div>
-      <div class="info-card"><p>${typeof content === "string" ? esc(content) : content}</p></div>
+      <div class="info-card"><p style="${italic ? 'font-style:italic' : ''}">${esc(content)}</p></div>
     </div>
   `;
 }
@@ -651,8 +606,6 @@ function esc(s) {
     .replace(/>/g, "&gt;")
     .replace(/\n/g, "<br>");
 }
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
 
 loadProfile();
 updateBtn();
