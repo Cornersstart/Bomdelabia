@@ -195,6 +195,23 @@
     /* Error */
     .error-box { margin-top: 14px; background: #180404; border: 1px solid #440000; border-radius: 10px; padding: 12px 16px; color: #ff7070; font-size: 12px; font-family: monospace; }
 
+    /* Stage tracker */
+    .stage-bar { display: flex; align-items: center; gap: 0; margin-bottom: 24px; }
+    .stage-node { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
+    .stage-circle { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.3s; }
+    .stage-label { font-size: 8px; color: var(--muted); font-family: monospace; text-align: center; white-space: nowrap; letter-spacing: 0.5px; }
+    .stage-conn { flex: 1; height: 2px; background: var(--border); min-width: 8px; transition: background 0.3s; }
+    .stage-node.done .stage-circle { border-color: #22c55e; background: #22c55e18; }
+    .stage-node.done .stage-label { color: #22c55e; }
+    .stage-node.current .stage-circle { border-color: var(--accent); background: var(--accent)30; box-shadow: 0 0 12px var(--accent)40; }
+    .stage-node.current .stage-label { color: var(--accent); font-weight: 700; }
+    .stage-conn.done { background: #22c55e66; }
+    .stage-conn.current { background: linear-gradient(90deg, #22c55e66, var(--accent)44); }
+
+    /* Conversation history */
+    .conv-section { margin-top: 14px; }
+    .conv-hint { font-size: 10px; color: #333; font-family: monospace; margin-top: 4px; line-height: 1.6; }
+
     /* Toast */
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -290,6 +307,20 @@
   <textarea id="textInput" rows="5"
     placeholder="Exemplos:&#10;• Tinder: bio dela + o que tem nas fotos&#10;• Instagram: story que ela postou&#10;• WhatsApp: últimas mensagens trocadas"
     oninput="updateBtn()"></textarea>
+
+  <!-- Conversation History -->
+  <div class="conv-section">
+    <span class="section-label">💬 O QUE ELA RESPONDEU / HISTÓRICO (opcional — para continuar a conversa)</span>
+    <textarea id="convHistoryTA" rows="4"
+      placeholder="Cole aqui a resposta dela ou a conversa até agora para continuar de forma fluida...
+
+Ex:
+Você: vi que você gosta de trilha
+Ela: sim! fui no pico do jaraguá semana passada
+Você: que incrível, ainda não fui lá
+Ela: você deveria ir, a vista é demais 😍"></textarea>
+    <p class="conv-hint">💡 Com o histórico, as sugestões se encaixam naturalmente na conversa — sem parecer recomeço.</p>
+  </div>
 
   <!-- Analyze Button -->
   <button class="btn-analyze" id="analyzeBtn" onclick="analyze()" disabled>
@@ -515,12 +546,15 @@ async function analyze() {
   document.getElementById("errorBox").style.display  = "none";
   document.getElementById("result").style.display    = "none";
 
+  const convHist = document.getElementById("convHistoryTA").value.trim();
+
   const fd = new FormData();
   if (text) fd.append("text", text);
-  fd.append("app_hint",    selectedApp);
-  fd.append("memory_mode", selectedMemory);
-  fd.append("ig_knows_me", String(igKnowsMe));
-  fd.append("profile",     JSON.stringify(profile));
+  fd.append("app_hint",             selectedApp);
+  fd.append("memory_mode",          selectedMemory);
+  fd.append("ig_knows_me",          String(igKnowsMe));
+  fd.append("profile",              JSON.stringify(profile));
+  fd.append("conversation_history", convHist);
   imageFiles.forEach(f => fd.append("images", f));
 
   try {
@@ -556,9 +590,11 @@ function renderResult(r) {
     </div>
   `;
 
-  if (r.analise)    html += infoBlock("📊 Análise do perfil", r.analise,    color);
-  if (r.leitura)    html += infoBlock("🧠 Leitura social",    r.leitura,    color);
-  if (r.estrategia) html += infoBlock("🎯 Estratégia",        r.estrategia, color, true);
+  if (r.analise)          html += infoBlock("📊 Análise do perfil",  r.analise,          color);
+  if (r.descricao_fisica) html += infoBlock("💃 Descrição física",   r.descricao_fisica, color);
+  if (r.leitura)          html += infoBlock("🧠 Leitura social",     r.leitura,          color);
+  if (r.estrategia)       html += infoBlock("🎯 Estratégia",         r.estrategia,       color, true);
+  if (r.estagio)          html += stageBar(r.estagio);
 
   html += `
     <div class="info-block">
@@ -597,6 +633,41 @@ function renderResult(r) {
   resultEl.innerHTML = html;
   resultEl.style.display = "block";
   resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function stageBar(estagio) {
+  const stages = [
+    { key: "PRIMEIRO_CONTATO", icon: "👋", label: "Contato" },
+    { key: "AQUECENDO",        icon: "💬", label: "Aquecendo" },
+    { key: "CONEXAO",          icon: "🔥", label: "Conexão" },
+    { key: "ENCONTRO",         icon: "📍", label: "Encontro ✅" },
+  ];
+  const idx = stages.findIndex(s => s.key === estagio);
+  if (idx < 0) return "";
+
+  let html = `
+    <div class="info-block">
+      <div class="info-block-header">
+        <span class="info-block-label">📈 Estágio da conversa</span>
+        <div class="info-block-line"></div>
+      </div>
+      <div class="info-card" style="padding:18px 20px">
+        <div class="stage-bar">`;
+
+  stages.forEach((s, i) => {
+    const cls = i < idx ? "done" : i === idx ? "current" : "";
+    html += `<div class="stage-node ${cls}">
+      <div class="stage-circle">${s.icon}</div>
+      <div class="stage-label">${s.label}</div>
+    </div>`;
+    if (i < stages.length - 1) {
+      const connCls = i < idx ? "done" : i === idx ? "current" : "";
+      html += `<div class="stage-conn ${connCls}"></div>`;
+    }
+  });
+
+  html += `</div></div></div>`;
+  return html;
 }
 
 function infoBlock(label, content, color, italic = false) {
