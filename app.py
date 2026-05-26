@@ -64,6 +64,18 @@ ELA_NAO_ME_CONHECE: Abordagem completamente fria. Uma frase deve capturar atenç
 
 ---
 
+## HISTÓRICO DA CONVERSA
+
+Se HISTÓRICO DA CONVERSA for fornecido no input:
+- Analise o tom, ritmo e profundidade da troca atual
+- Identifique o que ela demonstrou interesse, abertura ou resistência
+- Note o que ela ignorou, não respondeu ou mudou de assunto (são os sinais mais importantes)
+- As mensagens geradas devem ser continuações naturais desse histórico — soam fluidas, nunca como nova abordagem
+- Nunca repetir perguntas já feitas. Nunca mencionar o que já foi dito.
+- Avance na conexão em vez de recomeçar
+
+---
+
 # 🧠 ETAPA 1 — ANÁLISE DO PERFIL / CONTEXTO
 
 Se for TINDER ou Instagram, analise:
@@ -85,6 +97,14 @@ Se for TINDER ou Instagram, analise:
 - é mais fechada ou aberta?
 - transmite curiosidade, tédio, padrão alto?
 - qual gatilho psicológico é mais relevante para esse perfil?
+
+4. DESCRIÇÃO FÍSICA (obrigatório quando houver foto/imagem da pessoa):
+- Físico geral: biótipo estimado (magra, curvilínea, atlética, cheia, etc.)
+- Rosto e cabelo: traços marcantes, cor e comprimento do cabelo, tipo (liso, ondulado, cacheado)
+- Linguagem corporal: postura nas fotos, expressão facial, olhar (direto, tímido, sedutor)
+- Estilo: tipo de roupa, cores, se demonstra cuidado com aparência, vibe da escolha estética
+- Vibe geral transmitida: sensual, doce, misteriosa, esportiva, elegante, casual, etc.
+- Nível de atratividade aparente: alto / médio — avaliação objetiva sem julgamento
 
 Explique de forma curta.
 
@@ -109,6 +129,12 @@ TINDER: gerar curiosidade / fugir do padrão / facilitar resposta / evitar elogi
 INSTAGRAM (não me conhece): capturar atenção em 1-2 frases / referência específica / sem elogio genérico
 INSTAGRAM (me conhece): naturalidade / referência compartilhada / aprofundar conexão
 WHATSAPP: manter ritmo / criar conexão / aumentar envolvimento
+
+Identifique o ESTÁGIO atual da conversa com base no contexto:
+- PRIMEIRO_CONTATO: nunca conversaram ou primeiro contato
+- AQUECENDO: já há troca, mas ainda superficial
+- CONEXÃO: conversa fluindo bem, interesse mútuo claro
+- ENCONTRO: conexão forte, momento certo de propor encontro
 
 Explique em 1 frase qual princípio psicológico está sendo usado.
 
@@ -169,11 +195,16 @@ MODO:
 ANÁLISE DO PERFIL:
 [texto]
 
+DESCRIÇÃO FÍSICA:
+[descrição detalhada do físico — apenas se houver imagem; escreva "N/A" se não houver foto]
+
 LEITURA SOCIAL:
 [texto]
 
 ESTRATÉGIA:
 [texto]
+
+ESTÁGIO: [PRIMEIRO_CONTATO / AQUECENDO / CONEXÃO / ENCONTRO]
 
 MENSAGENS:
 
@@ -198,7 +229,7 @@ APRENDIZADO:
 # ─── PARSER ──────────────────────────────────────────────────────────────────
 
 def parse_response(text):
-    QUOTES = '"""\'“”'
+    QUOTES = '"""\'\''
 
     def strip_md(s):
         s = re.sub(r'\*\*(.+?)\*\*', r'\1', s, flags=re.DOTALL)
@@ -237,22 +268,42 @@ def parse_response(text):
         if line.strip() and re.match(r'^[-•*""*]', line.strip())
     ]
 
+    estagio_m = re.search(r"ESTÁGIO:\s*\[?([^\n\[\]]+)\]?", text, re.IGNORECASE)
+    estagio_raw = estagio_m.group(1).strip().upper() if estagio_m else ""
+    estagio = ""
+    if estagio_raw:
+        if "PRIMEIRO" in estagio_raw or "CONTATO" in estagio_raw:
+            estagio = "PRIMEIRO_CONTATO"
+        elif "AQUEC" in estagio_raw:
+            estagio = "AQUECENDO"
+        elif "CONEX" in estagio_raw:
+            estagio = "CONEXAO"
+        elif "ENCONTR" in estagio_raw:
+            estagio = "ENCONTRO"
+        else:
+            estagio = estagio_raw
+
+    desc_raw = get(r"DESCRIÇÃO FÍSICA:\s*([\s\S]*?)(?=LEITURA SOCIAL:|$)")
+    descricao_fisica = "" if desc_raw.strip().upper() in ("N/A", "N/A.", "") else desc_raw
+
     return {
         "modo": modo,
-        "analise":    get(r"ANÁLISE DO PERFIL:\s*([\s\S]*?)(?=LEITURA SOCIAL:|$)"),
-        "leitura":    get(r"LEITURA SOCIAL:\s*([\s\S]*?)(?=ESTRATÉGIA:|$)"),
-        "estrategia": get(r"ESTRATÉGIA:\s*([\s\S]*?)(?=MENSAGENS:|$)"),
-        "segura":      get_msg(r'1\.\s*SEGURA:'),
-        "estrategica": get_msg(r'2\.\s*ESTRATÉGICA:'),
-        "diferente":   get_msg(r'3\.\s*DIFERENTE:'),
-        "nao_enviar": nao_enviar,
-        "aprendizado": get(r"APRENDIZADO:\s*([\s\S]*?)$"),
+        "analise":         get(r"ANÁLISE DO PERFIL:\s*([\s\S]*?)(?=DESCRIÇÃO FÍSICA:|LEITURA SOCIAL:|$)"),
+        "descricao_fisica": descricao_fisica,
+        "leitura":         get(r"LEITURA SOCIAL:\s*([\s\S]*?)(?=ESTRATÉGIA:|$)"),
+        "estrategia":      get(r"ESTRATÉGIA:\s*([\s\S]*?)(?=ESTÁGIO:|MENSAGENS:|$)"),
+        "estagio":         estagio,
+        "segura":          get_msg(r'1\.\s*SEGURA:'),
+        "estrategica":     get_msg(r'2\.\s*ESTRATÉGICA:'),
+        "diferente":       get_msg(r'3\.\s*DIFERENTE:'),
+        "nao_enviar":      nao_enviar,
+        "aprendizado":     get(r"APRENDIZADO:\s*([\s\S]*?)$"),
     }
 
 
 # ─── API CALL ────────────────────────────────────────────────────────────────
 
-def call_anthropic(text_input, images=None, profile=None, app_hint=None, memory_mode=None, ig_knows_me=None):
+def call_anthropic(text_input, images=None, profile=None, app_hint=None, memory_mode=None, ig_knows_me=None, conversation_history=None):
     context_parts = []
 
     if profile:
@@ -278,6 +329,9 @@ def call_anthropic(text_input, images=None, profile=None, app_hint=None, memory_
         label = "ELA_ME_CONHECE — ela já sabe quem é o usuário" if ig_knows_me else "ELA_NAO_ME_CONHECE — abordagem completamente fria"
         context_parts.append(f"INSTAGRAM: {label}")
 
+    if conversation_history:
+        context_parts.append(f"HISTÓRICO DA CONVERSA:\n{conversation_history}")
+
     full_text = text_input or "Analise o conteúdo visual acima."
     if context_parts:
         full_text += "\n\n---\n" + "\n".join(context_parts)
@@ -299,7 +353,7 @@ def call_anthropic(text_input, images=None, profile=None, app_hint=None, memory_
         },
         json={
             "model": "claude-opus-4-5",
-            "max_tokens": 1800,
+            "max_tokens": 2400,
             "system": SYSTEM_PROMPT,
             "messages": [{"role": "user", "content": user_content}],
         },
@@ -328,6 +382,7 @@ def analyze():
     ig_knows_me_raw = request.form.get("ig_knows_me", "")
     ig_knows_me = (ig_knows_me_raw.lower() == "true") if ig_knows_me_raw else None
     profile_raw = request.form.get("profile", "{}")
+    conversation_history = request.form.get("conversation_history", "").strip()
 
     try:
         profile = json.loads(profile_raw)
@@ -347,7 +402,7 @@ def analyze():
         return jsonify({"error": "Envie texto ou imagem."}), 400
 
     try:
-        raw = call_anthropic(text_input, images, profile, app_hint, memory_mode, ig_knows_me)
+        raw = call_anthropic(text_input, images, profile, app_hint, memory_mode, ig_knows_me, conversation_history)
         result = parse_response(raw)
         return jsonify({"ok": True, "result": result, "raw": raw})
     except requests.HTTPError as e:
