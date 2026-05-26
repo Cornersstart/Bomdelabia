@@ -64,7 +64,55 @@
       padding: 14px 16px 10px;
       border-bottom: 1px solid var(--border);
       z-index: 10; font-size: 22px; font-weight: 800;
+      display: flex; align-items: center; justify-content: space-between;
     }
+    .topbar-title { font-size: 22px; font-weight: 800; }
+    .topbar-new-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--accent); color: white; border: none;
+      font-size: 22px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px #0084ff44; flex-shrink: 0;
+    }
+
+    /* ── NEW CONV MODAL ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: #0007;
+      z-index: 200; display: flex; align-items: flex-end;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal-sheet {
+      width: 100%; background: var(--surface);
+      border-radius: 20px 20px 0 0; padding: 20px 20px 32px;
+      transform: translateY(100%); transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    }
+    .modal-backdrop.open .modal-sheet { transform: translateY(0); }
+    .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 18px; }
+    .modal-title { font-size: 17px; font-weight: 800; margin-bottom: 16px; }
+    .modal-label { font-size: 9px; color: var(--muted); font-family: monospace; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 6px; }
+    .modal-input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 16px;
+      padding: 12px 14px; outline: none; font-family: inherit; margin-bottom: 14px;
+    }
+    .modal-input:focus { border-color: var(--accent); }
+    .modal-apps { display: flex; gap: 8px; margin-bottom: 20px; }
+    .modal-app-btn {
+      flex: 1; padding: 10px 4px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted); font-size: 12px;
+      font-family: monospace; cursor: pointer; text-align: center; transition: all 0.15s;
+    }
+    .modal-app-btn.sel-auto      { border-color: var(--accent);    color: var(--accent);    background: #0084ff12; }
+    .modal-app-btn.sel-tinder    { border-color: var(--tinder);    color: var(--tinder);    background: #ff445812; }
+    .modal-app-btn.sel-instagram { border-color: var(--instagram); color: var(--instagram); background: #c1358412; }
+    .modal-app-btn.sel-whatsapp  { border-color: var(--whatsapp);  color: var(--whatsapp);  background: #25d36612; }
+    .modal-confirm {
+      width: 100%; padding: 14px; background: var(--accent); color: white;
+      border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    .modal-confirm:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
 
     /* ── CONV LIST ── */
     .conv-list { padding: 4px 0; }
@@ -386,13 +434,35 @@
 
   <!-- ── CONVERSAS ── -->
   <div id="viewConvs" class="view active">
-    <div class="topbar">Conversas</div>
+    <div class="topbar">
+      <span class="topbar-title">Conversas</span>
+      <button class="topbar-new-btn" onclick="openNewConvModal()" title="Nova conversa">+</button>
+    </div>
     <div class="conv-list" id="convList"></div>
     <div class="empty-state" id="convEmpty" style="display:none">
       <div class="ei">💬</div>
       <p>Nenhuma conversa ainda.</p>
-      <p style="margin-top:6px;font-size:13px">Analise um perfil para começar.</p>
-      <button class="empty-cta" onclick="showView('analyze')">✏️ Nova análise</button>
+      <p style="margin-top:6px;font-size:13px">Toque no <strong>+</strong> para começar uma nova.</p>
+      <button class="empty-cta" onclick="openNewConvModal()">+ Nova conversa</button>
+    </div>
+  </div>
+
+  <!-- ── MODAL NOVA CONVERSA ── -->
+  <div class="modal-backdrop" id="newConvModal" onclick="handleModalBackdrop(event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Nova conversa</div>
+      <span class="modal-label">Nome dela</span>
+      <input class="modal-input" id="newConvName" type="text" placeholder="Ju, Ana, Laís..."
+        oninput="updateModalConfirm()" onkeydown="if(event.key==='Enter')confirmNewConv()"/>
+      <span class="modal-label">APP</span>
+      <div class="modal-apps">
+        <button class="modal-app-btn sel-auto" data-mapp="auto"      onclick="selectModalApp('auto')">🤖 Auto</button>
+        <button class="modal-app-btn"          data-mapp="tinder"    onclick="selectModalApp('tinder')">❤️ Tinder</button>
+        <button class="modal-app-btn"          data-mapp="instagram" onclick="selectModalApp('instagram')">📷 Insta</button>
+        <button class="modal-app-btn"          data-mapp="whatsapp"  onclick="selectModalApp('whatsapp')">💬 Whats</button>
+      </div>
+      <button class="modal-confirm" id="modalConfirmBtn" onclick="confirmNewConv()" disabled>Criar conversa</button>
     </div>
   </div>
 
@@ -678,6 +748,34 @@ function renderConvList() {
 // ─── OPEN / CLOSE CONV ────────────────────────────────────────────────────────
 function openConv(id) { currentConvId = id; showView('chat'); }
 function backToConvs() { currentConvId = null; showView('convs'); }
+
+// ─── NEW CONV MODAL ───────────────────────────────────────────────────────────
+let newConvApp = 'auto';
+function openNewConvModal() {
+  newConvApp = 'auto';
+  document.getElementById('newConvName').value = '';
+  document.querySelectorAll('.modal-app-btn').forEach(b => { b.className='modal-app-btn'; if(b.dataset.mapp==='auto') b.classList.add('sel-auto'); });
+  document.getElementById('modalConfirmBtn').disabled = true;
+  document.getElementById('newConvModal').classList.add('open');
+  setTimeout(() => document.getElementById('newConvName').focus(), 300);
+}
+function closeNewConvModal() { document.getElementById('newConvModal').classList.remove('open'); }
+function handleModalBackdrop(e) { if(e.target === document.getElementById('newConvModal')) closeNewConvModal(); }
+function selectModalApp(app) {
+  newConvApp = app;
+  document.querySelectorAll('.modal-app-btn').forEach(b => { b.className='modal-app-btn'; if(b.dataset.mapp===app) b.classList.add(`sel-${app}`); });
+}
+function updateModalConfirm() {
+  const name = document.getElementById('newConvName').value.trim();
+  document.getElementById('modalConfirmBtn').disabled = !name;
+}
+function confirmNewConv() {
+  const name = document.getElementById('newConvName').value.trim();
+  if (!name) return;
+  closeNewConvModal();
+  const conv = upsertConversation(name, newConvApp, [], '', null);
+  if (conv) { currentConvId = conv.id; showView('chat'); }
+}
 
 function renderChatView() {
   const conv = getConv(currentConvId);
