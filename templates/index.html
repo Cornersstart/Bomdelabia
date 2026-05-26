@@ -152,6 +152,67 @@
       font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
     }
 
+    /* ── CHAT ANALYZE SHEET ── */
+    .cas-backdrop {
+      position: fixed; inset: 0; background: #0007;
+      z-index: 200; display: flex; align-items: flex-end;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .cas-backdrop.open { opacity: 1; pointer-events: all; }
+    .cas-sheet {
+      width: 100%; background: var(--surface);
+      border-radius: 20px 20px 0 0; padding: 18px 16px 32px;
+      transform: translateY(100%); transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .cas-backdrop.open .cas-sheet { transform: translateY(0); }
+    .cas-handle { width: 36px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 14px; }
+    .cas-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; }
+    .cas-lbl { font-size: 9px; color: var(--muted); font-family: monospace; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 6px; }
+    .cas-upload {
+      border: 2px dashed var(--border); border-radius: 12px; cursor: pointer;
+      background: var(--bg); min-height: 70px; display: flex;
+      align-items: center; justify-content: center; margin-bottom: 8px; overflow: hidden;
+    }
+    .cas-upload:hover { border-color: #aaa; }
+    .cas-upload-inner { text-align: center; padding: 14px; }
+    .cas-thumbs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
+    .cas-thumb {
+      position: relative; width: 62px; height: 62px; border-radius: 10px;
+      overflow: hidden; border: 1px solid var(--border); flex-shrink: 0;
+    }
+    .cas-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cas-thumb-rm {
+      position: absolute; top: 2px; right: 2px; background: #000c;
+      color: #fff; font-size: 9px; width: 16px; height: 16px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;
+    }
+    .cas-add-btn {
+      width: 62px; height: 62px; border-radius: 10px; border: 2px dashed var(--border);
+      background: var(--surface); color: #bbb; font-size: 20px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .cas-textarea {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 13px;
+      padding: 11px 13px; outline: none; font-family: monospace;
+      resize: none; line-height: 1.6; margin-bottom: 12px;
+    }
+    .cas-textarea:focus { border-color: var(--accent); }
+    .cas-mems { display: flex; gap: 7px; margin-bottom: 14px; }
+    .cas-mem {
+      flex: 1; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted); font-size: 10px;
+      font-family: monospace; cursor: pointer; text-align: center; line-height: 1.7; transition: all 0.15s;
+    }
+    .cas-mem.active { border-color: var(--accent); color: var(--accent); background: #0084ff12; }
+    .cas-submit {
+      width: 100%; padding: 13px; background: var(--accent); color: white;
+      border: none; border-radius: 12px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    .cas-submit:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
     /* ── CHAT VIEW ── */
     #viewChat {
       flex: 1; overflow: hidden;
@@ -595,6 +656,38 @@ Ela: você deveria ir, a vista é demais 😍"></textarea>
 
 </div>
 
+<!-- ── CHAT ANALYZE SHEET ── -->
+<div class="cas-backdrop" id="casBackdrop" onclick="handleCasBackdrop(event)">
+  <div class="cas-sheet">
+    <div class="cas-handle"></div>
+    <div class="cas-title">⚡ Analisar perfil</div>
+
+    <span class="cas-lbl">Fotos do perfil (até 4)</span>
+    <div class="cas-upload" id="casUpload" onclick="casTriggerUpload()">
+      <input type="file" id="casFileInput" accept="image/*" multiple style="display:none" onchange="casOnFileChange(event)"/>
+      <div class="cas-upload-inner" id="casUploadInner">
+        <div style="font-size:20px;margin-bottom:4px">📎</div>
+        <div style="font-size:11px;color:var(--muted);font-family:monospace">Toque para adicionar fotos</div>
+      </div>
+    </div>
+    <div class="cas-thumbs" id="casThumbs"></div>
+
+    <span class="cas-lbl">Bio / Perfil / Contexto</span>
+    <textarea class="cas-textarea" id="casText" rows="3"
+      placeholder="Bio dela, o que ela postou, contexto da situação..."
+      oninput="casUpdateBtn()"></textarea>
+
+    <span class="cas-lbl">Momento</span>
+    <div class="cas-mems">
+      <button class="cas-mem active" data-cmem="primeiro-contato" onclick="casSelectMem('primeiro-contato')">👋<br>Primeiro<br>contato</button>
+      <button class="cas-mem"        data-cmem="em-andamento"     onclick="casSelectMem('em-andamento')">💬<br>Já<br>conversamos</button>
+      <button class="cas-mem"        data-cmem="reaquecendo"      onclick="casSelectMem('reaquecendo')">🔥<br>Reaquecer</button>
+    </div>
+
+    <button class="cas-submit" id="casSubmitBtn" onclick="casSubmit()" disabled>⚡ Analisar & gerar mensagens</button>
+  </div>
+</div>
+
 <nav class="bottom-nav">
   <button id="navConvs"   class="nav-btn active" onclick="showView('convs')">
     <span class="ni">💬</span><span>Conversas</span>
@@ -869,34 +962,103 @@ function useSugg(txt) {
   showToast('✓ Registrada!');
 }
 
-async function analyzeFromChat() {
+function analyzeFromChat() { openCasSheet(); }
+
+// ─── CHAT ANALYZE SHEET ───────────────────────────────────────────────────────
+let casImages = [];
+let casMemory = 'primeiro-contato';
+const CAS_MAX = 4;
+
+function openCasSheet() {
   const conv = getConv(currentConvId);
   if (!conv) return;
+  // pre-select memory based on conv stage
+  const autoMem = ['CONEXAO','ENCONTRO'].includes(conv.stage) ? 'em-andamento'
+                : conv.stage === 'AQUECENDO' ? 'em-andamento' : 'primeiro-contato';
+  casMemory = autoMem;
+  document.querySelectorAll('.cas-mem').forEach(b => b.classList.toggle('active', b.dataset.cmem === autoMem));
+  casImages = [];
+  document.getElementById('casText').value = '';
+  casRenderThumbs();
+  casUpdateBtn();
+  document.getElementById('casBackdrop').classList.add('open');
+}
+function closeCasSheet() { document.getElementById('casBackdrop').classList.remove('open'); }
+function handleCasBackdrop(e) { if (e.target === document.getElementById('casBackdrop')) closeCasSheet(); }
+
+function casSelectMem(m) {
+  casMemory = m;
+  document.querySelectorAll('.cas-mem').forEach(b => b.classList.toggle('active', b.dataset.cmem === m));
+}
+function casTriggerUpload() { document.getElementById('casFileInput').click(); }
+function casOnFileChange(e) {
+  for (const f of Array.from(e.target.files)) {
+    if (!f.type.startsWith('image/')) continue;
+    if (casImages.length >= CAS_MAX) break;
+    casImages.push(f);
+  }
+  e.target.value = '';
+  casRenderThumbs(); casUpdateBtn();
+}
+function casRemoveImg(i) { casImages.splice(i, 1); casRenderThumbs(); casUpdateBtn(); }
+function casRenderThumbs() {
+  const c = document.getElementById('casThumbs');
+  c.innerHTML = '';
+  casImages.forEach((f, i) => {
+    const url = URL.createObjectURL(f);
+    const w = document.createElement('div'); w.className = 'cas-thumb';
+    w.innerHTML = `<img src="${url}"/><button class="cas-thumb-rm" onclick="casRemoveImg(${i})">✕</button>`;
+    c.appendChild(w);
+  });
+  if (casImages.length < CAS_MAX) {
+    const b = document.createElement('div'); b.className = 'cas-add-btn'; b.textContent = '+'; b.onclick = casTriggerUpload; c.appendChild(b);
+  }
+  const inner = document.getElementById('casUploadInner');
+  const zone  = document.getElementById('casUpload');
+  if (casImages.length > 0) {
+    zone.style.minHeight = '0'; zone.style.display = 'none';
+  } else {
+    zone.style.display = 'flex'; zone.style.minHeight = '70px';
+    inner.innerHTML = '<div style="font-size:20px;margin-bottom:4px">📎</div><div style="font-size:11px;color:var(--muted);font-family:monospace">Toque para adicionar fotos</div>';
+  }
+}
+function casUpdateBtn() {
+  const txt = document.getElementById('casText').value.trim();
+  document.getElementById('casSubmitBtn').disabled = !txt && casImages.length === 0;
+}
+
+async function casSubmit() {
+  const conv = getConv(currentConvId);
+  if (!conv) return;
+  const txt = document.getElementById('casText').value.trim();
+  if (!txt && casImages.length === 0) return;
+  closeCasSheet();
   const btn = document.getElementById('chatAnalyzeBtn');
   btn.textContent = '⏳'; btn.disabled = true;
   const hist = conv.messages.map(m => `${m.side==='me'?'Você':'Ela'}: ${m.text}`).join('\n');
   const fd = new FormData();
-  fd.append('text',                 `Continuação — ${conv.name}`);
+  fd.append('text',                 txt || `Analisar perfil — ${conv.name}`);
   fd.append('app_hint',             conv.app || 'auto');
-  fd.append('memory_mode',          ['CONEXAO','ENCONTRO'].includes(conv.stage) ? 'em-andamento' : conv.stage==='AQUECENDO' ? 'em-andamento' : 'primeiro-contato');
+  fd.append('memory_mode',          casMemory);
   fd.append('ig_knows_me',          'false');
-  fd.append('profile',              JSON.stringify({ name:conv.name, app:conv.app }));
-  fd.append('conversation_history', hist);
+  fd.append('profile',              JSON.stringify({ name: conv.name, app: conv.app }));
+  if (hist) fd.append('conversation_history', hist);
+  casImages.forEach(f => fd.append('images', f));
   try {
-    const res  = await fetch('/analyze', { method:'POST', body:fd });
+    const res  = await fetch('/analyze', { method: 'POST', body: fd });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
-    conv.analyses.push({ at:Date.now(), result:data.result });
+    conv.analyses.push({ at: Date.now(), result: data.result });
     if (data.result.estagio) conv.stage = data.result.estagio;
     conv.updatedAt = Date.now();
     saveConversations();
     const stL = { PRIMEIRO_CONTATO:'Primeiro contato', AQUECENDO:'Aquecendo', CONEXAO:'Conexão', ENCONTRO:'Encontro 📍' }[conv.stage] || '';
-    const appL = conv.app && conv.app!=='auto' ? conv.app[0].toUpperCase()+conv.app.slice(1) : '';
+    const appL = conv.app && conv.app !== 'auto' ? conv.app[0].toUpperCase()+conv.app.slice(1) : '';
     document.getElementById('chatSub').textContent = [appL, stL].filter(Boolean).join(' · ') || 'Reply Coach';
     const c = document.getElementById('chatMessages');
     c.insertAdjacentHTML('beforeend', aiBlockHtml(data.result));
     c.scrollTop = c.scrollHeight;
-  } catch(e) { alert('Erro: '+e.message); }
+  } catch(e) { alert('Erro: ' + e.message); }
   finally { btn.textContent = '⚡ Analisar'; btn.disabled = false; }
 }
 
