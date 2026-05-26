@@ -1,222 +1,380 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Reply Coach</title>
   <style>
     :root {
-      --bg: #070709;
-      --surface: #0f0f14;
-      --card: #13131a;
-      --border: #1c1c28;
-      --text: #e6e6f0;
-      --muted: #4a4a62;
-      --accent: #7c6af7;
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --card: #ffffff;
+      --border: #e4e6eb;
+      --text: #050505;
+      --muted: #65676b;
+      --hover: #f2f2f2;
+      --accent: #0084ff;
       --tinder: #ff4458;
       --instagram: #c13584;
       --whatsapp: #25d366;
+      --nav-h: 56px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: Georgia, 'Times New Roman', serif;
-      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 32px 16px 80px;
     }
-    .container { width: 100%; max-width: 580px; }
 
-    /* Header */
-    .header { text-align: center; margin-bottom: 28px; }
-    .header-tag { font-size: 9px; letter-spacing: 5px; color: var(--muted); font-family: monospace; margin-bottom: 10px; }
-    h1 { font-size: clamp(24px, 5vw, 36px); font-weight: 400; letter-spacing: -0.5px; color: #fff; }
-    h1 span { font-size: 0.4em; color: var(--muted); font-family: monospace; letter-spacing: 2px; margin-left: 8px; }
-    .subtitle { color: var(--muted); margin-top: 8px; font-size: 13px; font-style: italic; line-height: 1.5; }
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      height: var(--nav-h);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2px;
+      border: none; background: none; cursor: pointer;
+      font-size: 10px; color: var(--muted); font-family: inherit;
+      transition: color 0.15s;
+    }
+    .nav-btn .ni { font-size: 22px; }
+    .nav-btn.active { color: var(--accent); }
 
-    /* Profile Panel */
-    .profile-toggle {
-      width: 100%; background: var(--surface);
+    /* ── VIEWS ── */
+    #appWrap {
+      flex: 1; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .view { flex: 1; overflow-y: auto; display: none; }
+    .view.active { display: block; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky; top: 0;
+      background: var(--surface);
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      z-index: 10; font-size: 22px; font-weight: 800;
+    }
+
+    /* ── CONV LIST ── */
+    .conv-list { padding: 4px 0; }
+    .conv-item {
+      display: flex; align-items: center;
+      padding: 8px 12px; gap: 12px; cursor: pointer;
+      border-radius: 12px; margin: 2px 8px;
+      transition: background 0.1s;
+    }
+    .conv-item:hover { background: var(--hover); }
+    .conv-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .conv-info { flex: 1; min-width: 0; }
+    .conv-name { font-weight: 700; font-size: 15px; }
+    .conv-last {
+      font-size: 13px; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;
+    }
+    .conv-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+    .conv-date { font-size: 11px; color: var(--muted); }
+    .conv-app-tag {
+      font-size: 8px; font-family: monospace; border-radius: 6px;
+      padding: 1px 5px; font-weight: 700; color: white; text-transform: uppercase;
+    }
+    .empty-state {
+      text-align: center; padding: 60px 24px; color: var(--muted);
+    }
+    .empty-state .ei { font-size: 48px; margin-bottom: 14px; }
+    .empty-state p { font-size: 15px; line-height: 1.7; }
+    .empty-cta {
+      display: inline-block; margin-top: 16px;
+      background: var(--accent); color: white; border: none;
+      border-radius: 20px; padding: 10px 20px;
+      font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+
+    /* ── CHAT VIEW ── */
+    #viewChat {
+      flex: 1; overflow: hidden;
+      display: none; flex-direction: column;
+    }
+    #viewChat.active { display: flex; }
+    .chat-topbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; background: var(--surface);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .chat-back {
+      background: none; border: none; font-size: 24px;
+      color: var(--accent); cursor: pointer; padding: 4px; line-height: 1;
+    }
+    .chat-av-sm {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .chat-hdr-info { flex: 1; min-width: 0; }
+    .chat-hdr-name { font-weight: 700; font-size: 16px; }
+    .chat-hdr-sub { font-size: 11px; color: var(--muted); }
+    .chat-analyze-btn {
+      background: var(--accent); color: white; border: none;
+      border-radius: 20px; padding: 7px 14px;
+      font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;
+      flex-shrink: 0;
+    }
+    .chat-messages {
+      flex: 1; overflow-y: auto;
+      padding: 12px 12px 8px; background: var(--surface);
+    }
+    .brow {
+      display: flex; align-items: flex-end; gap: 6px; margin-bottom: 3px;
+    }
+    .brow.me { flex-direction: row-reverse; }
+    .brow.sys { justify-content: center; }
+    .bav {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .bspc { width: 28px; flex-shrink: 0; }
+    .bubble {
+      max-width: 72%; padding: 8px 12px; border-radius: 18px;
+      font-size: 15px; line-height: 1.45; word-break: break-word;
+    }
+    .bubble.her { background: #f0f2f5; color: var(--text); border-bottom-left-radius: 4px; }
+    .bubble.me  { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+    .bubble.sys { background: none; font-size: 11px; color: var(--muted); text-align: center; padding: 2px 0; }
+
+    /* AI block in chat */
+    .ai-block {
+      background: #fff8f0; border: 1px solid #ffe0b2;
+      border-radius: 14px; padding: 12px 14px; margin: 12px 0;
+    }
+    .ai-block-hdr {
+      font-size: 9px; font-weight: 700; color: #e65100;
+      letter-spacing: 1.5px; font-family: monospace; margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .ai-sug {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 10px; background: white;
       border: 1px solid var(--border); border-radius: 12px;
-      padding: 11px 16px; color: var(--text); cursor: pointer;
+      margin-bottom: 6px; cursor: pointer; transition: background 0.15s;
+    }
+    .ai-sug:hover { background: #f0f8ff; border-color: var(--accent); }
+    .ai-sug-ico { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+    .ai-sug-body { flex: 1; min-width: 0; }
+    .ai-sug-lbl { font-size: 8px; color: var(--muted); font-family: monospace; letter-spacing: 1px; display: block; margin-bottom: 2px; text-transform: uppercase; }
+    .ai-sug-txt { font-size: 14px; line-height: 1.5; color: var(--text); font-style: italic; }
+    .ai-use-btn {
+      font-size: 10px; background: var(--accent); color: white;
+      border: none; border-radius: 10px; padding: 3px 9px;
+      cursor: pointer; font-family: monospace; flex-shrink: 0; font-weight: 700;
+    }
+
+    .chat-date-sep { text-align: center; font-size: 11px; color: var(--muted); margin: 8px 0 4px; font-family: monospace; }
+
+    .chat-input-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; background: var(--surface);
+      border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    .chat-input-bar input {
+      flex: 1; background: var(--bg); border: none;
+      border-radius: 20px; padding: 9px 14px;
+      font-size: 14px; color: var(--text); outline: none; font-family: inherit;
+    }
+    .chat-input-bar input::placeholder { color: var(--muted); }
+    .chat-send-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--accent); color: white; border: none;
+      font-size: 16px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* ── ANALYZE VIEW ── */
+    #viewAnalyze { background: var(--bg); }
+    .analyze-wrap { display: flex; flex-direction: column; align-items: center; padding: 20px 16px 20px; }
+    .container { width: 100%; max-width: 580px; }
+    .header { text-align: center; margin-bottom: 20px; }
+    .header-tag { font-size: 9px; letter-spacing: 5px; color: var(--muted); font-family: monospace; margin-bottom: 8px; }
+    h1 { font-size: clamp(20px, 5vw, 30px); font-weight: 800; color: var(--text); }
+    h1 span { font-size: 0.4em; color: var(--muted); font-family: monospace; letter-spacing: 2px; margin-left: 8px; }
+    .subtitle { color: var(--muted); margin-top: 5px; font-size: 13px; font-style: italic; }
+
+    .section-label {
+      font-size: 9px; color: var(--muted); letter-spacing: 2px;
+      font-family: monospace; margin-bottom: 7px; display: block; text-transform: uppercase;
+    }
+
+    /* Profile panel */
+    .profile-toggle {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 11px 16px; color: var(--text); cursor: pointer;
       display: flex; justify-content: space-between; align-items: center;
-      font-family: monospace; font-size: 12px; margin-bottom: 20px;
-      transition: all 0.2s;
+      font-family: monospace; font-size: 12px; margin-bottom: 14px;
     }
     .profile-toggle.open { border-radius: 12px 12px 0 0; border-bottom-color: transparent; }
     .profile-body {
-      background: var(--surface); border: 1px solid #2e2e42;
+      background: var(--surface); border: 1px solid var(--border);
       border-top: none; border-radius: 0 0 12px 12px;
-      padding: 16px; margin-top: -20px; margin-bottom: 20px; display: none;
+      padding: 16px; margin-top: -14px; margin-bottom: 14px; display: none;
     }
     .profile-body.open { display: block; }
     .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 
-    /* Section label */
-    .section-label {
-      font-size: 9px; color: var(--muted); letter-spacing: 2px;
-      font-family: monospace; margin-bottom: 8px; display: block;
-      text-transform: uppercase;
-    }
-
-    /* App selector */
-    .app-selector { display: flex; gap: 8px; margin-bottom: 18px; }
+    /* Selectors */
+    .app-selector { display: flex; gap: 8px; margin-bottom: 14px; }
     .app-btn {
       flex: 1; background: var(--surface); border: 1px solid var(--border);
       color: var(--muted); border-radius: 10px; padding: 9px 4px;
-      font-size: 11px; cursor: pointer; font-family: monospace;
-      transition: all 0.2s; text-align: center;
+      font-size: 11px; cursor: pointer; font-family: monospace; text-align: center;
+      transition: all 0.2s;
     }
-    .app-btn.active-auto      { border-color: var(--accent);    color: var(--accent);    background: #7c6af718; }
-    .app-btn.active-tinder    { border-color: var(--tinder);    color: var(--tinder);    background: #ff445818; }
-    .app-btn.active-instagram { border-color: var(--instagram); color: var(--instagram); background: #c1358418; }
-    .app-btn.active-whatsapp  { border-color: var(--whatsapp);  color: var(--whatsapp);  background: #25d36618; }
+    .app-btn.active-auto      { border-color: var(--accent);    color: var(--accent);    background: #0084ff12; }
+    .app-btn.active-tinder    { border-color: var(--tinder);    color: var(--tinder);    background: #ff445812; }
+    .app-btn.active-instagram { border-color: var(--instagram); color: var(--instagram); background: #c1358412; }
+    .app-btn.active-whatsapp  { border-color: var(--whatsapp);  color: var(--whatsapp);  background: #25d36612; }
 
-    /* Memory selector */
-    .memory-selector { display: flex; gap: 8px; margin-bottom: 18px; }
+    .memory-selector { display: flex; gap: 8px; margin-bottom: 14px; }
     .mem-btn {
       flex: 1; background: var(--surface); border: 1px solid var(--border);
       color: var(--muted); border-radius: 10px; padding: 10px 6px;
       font-size: 11px; cursor: pointer; font-family: monospace;
-      transition: all 0.2s; text-align: center; line-height: 1.7;
+      text-align: center; line-height: 1.7; transition: all 0.2s;
     }
-    .mem-btn.active { border-color: var(--accent); color: var(--accent); background: #7c6af718; }
+    .mem-btn.active { border-color: var(--accent); color: var(--accent); background: #0084ff12; }
 
-    /* Instagram knows toggle */
-    .knows-selector { display: flex; gap: 8px; margin-bottom: 18px; }
+    .knows-selector { display: flex; gap: 8px; margin-bottom: 14px; }
     .knows-btn {
       flex: 1; background: var(--surface); border: 1px solid var(--border);
       color: var(--muted); border-radius: 10px; padding: 9px 4px;
-      font-size: 11px; cursor: pointer; font-family: monospace;
-      transition: all 0.2s; text-align: center;
+      font-size: 11px; cursor: pointer; font-family: monospace; text-align: center; transition: all 0.2s;
     }
-    .knows-btn.active { border-color: var(--instagram); color: var(--instagram); background: #c1358418; }
+    .knows-btn.active { border-color: var(--instagram); color: var(--instagram); background: #c1358412; }
 
-    /* Upload zone */
+    /* Upload */
     .upload-zone {
-      border: 2px dashed #1e1e2c; border-radius: 14px;
-      cursor: pointer; background: var(--surface); transition: all 0.2s;
-      min-height: 90px; display: flex; align-items: center;
-      justify-content: center; overflow: hidden; position: relative;
-      margin-bottom: 10px;
+      border: 2px dashed var(--border); border-radius: 14px; cursor: pointer;
+      background: var(--surface); transition: all 0.2s; min-height: 90px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; margin-bottom: 10px;
     }
-    .upload-zone:hover { border-color: #3a3a5a; }
-    .upload-zone.drag { border-color: var(--accent); background: #7c6af708; }
+    .upload-zone:hover { border-color: #aaa; }
+    .upload-zone.drag { border-color: var(--accent); background: #0084ff08; }
     .upload-inner { text-align: center; padding: 18px; }
     .upload-icon { font-size: 22px; margin-bottom: 5px; }
-    .upload-label { font-size: 12px; color: #555; font-family: monospace; }
-    .upload-sub { font-size: 10px; color: #333; margin-top: 3px; font-family: monospace; }
-
-    /* Thumbnails */
-    .img-thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; min-height: 0; }
+    .upload-label { font-size: 12px; color: var(--muted); font-family: monospace; }
+    .upload-sub { font-size: 10px; color: #b0b4bb; margin-top: 3px; font-family: monospace; }
+    .img-thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
     .img-thumb {
       position: relative; width: 70px; height: 70px; border-radius: 10px;
-      overflow: hidden; border: 1px solid #2a2a3a; flex-shrink: 0;
+      overflow: hidden; border: 1px solid var(--border); flex-shrink: 0;
     }
     .img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .img-thumb-rm {
       position: absolute; top: 3px; right: 3px; background: #000c;
       color: #fff; font-size: 10px; width: 18px; height: 18px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; border: none; line-height: 1;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;
     }
     .add-img-btn {
-      width: 70px; height: 70px; border-radius: 10px; border: 2px dashed #2a2a3a;
-      background: var(--surface); color: #333; font-size: 22px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+      width: 70px; height: 70px; border-radius: 10px; border: 2px dashed var(--border);
+      background: var(--surface); color: #bbb; font-size: 22px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
     }
-    .add-img-btn:hover { border-color: #4a4a6a; color: #666; }
+    .add-img-btn:hover { border-color: #888; color: #555; }
 
-    /* Textarea / inputs */
-    textarea, input, select {
+    /* Inputs */
+    textarea, input[type=text], select {
       width: 100%; background: var(--surface); border: 1px solid var(--border);
       border-radius: 10px; color: var(--text); font-size: 13px;
       padding: 12px 14px; outline: none; font-family: monospace;
       transition: border-color 0.2s; resize: vertical; line-height: 1.6;
     }
-    input, select { resize: none; }
-    textarea:focus, input:focus, select:focus { border-color: var(--accent); }
+    input[type=text], select { resize: none; }
+    textarea:focus, input[type=text]:focus, select:focus { border-color: var(--accent); }
+
+    .conv-section { margin-top: 12px; }
+    .conv-hint { font-size: 10px; color: var(--muted); font-family: monospace; margin-top: 4px; line-height: 1.6; }
 
     /* Button */
     .btn-analyze {
       width: 100%; padding: 14px 0; margin-top: 12px;
       border: none; border-radius: 12px; font-weight: 800;
       font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase;
-      font-family: monospace; cursor: pointer; transition: all 0.3s; color: #000;
+      font-family: monospace; cursor: pointer; transition: all 0.3s; color: white;
     }
-    .btn-analyze:disabled { background: #111 !important; color: #333 !important; cursor: not-allowed; box-shadow: none !important; }
+    .btn-analyze:disabled { background: var(--border) !important; color: var(--muted) !important; cursor: not-allowed; }
 
-    /* Result */
-    .result { margin-top: 28px; animation: fadeUp 0.4s ease; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; } }
+    /* Results */
+    .result { margin-top: 22px; animation: fadeUp 0.4s ease; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; } }
 
     .mode-badge {
       display: inline-flex; align-items: center; gap: 8px;
-      border-radius: 99px; padding: 6px 16px; margin-bottom: 22px;
+      border-radius: 99px; padding: 6px 16px; margin-bottom: 18px;
       font-size: 11px; font-weight: 700; font-family: monospace; letter-spacing: 2px;
     }
-
-    .info-block { margin-bottom: 16px; }
-    .info-block-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .info-block { margin-bottom: 14px; }
+    .info-block-header { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
     .info-block-label { font-size: 9px; letter-spacing: 2.5px; color: var(--muted); font-family: monospace; text-transform: uppercase; white-space: nowrap; }
     .info-block-line { flex: 1; height: 1px; background: var(--border); }
-    .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
-    .info-card p { color: #ccc; font-size: 13px; line-height: 1.7; }
+    .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .info-card p { color: #333; font-size: 13px; line-height: 1.7; }
 
-    /* Message cards */
-    .msg-card { background: var(--card); border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; position: relative; overflow: hidden; }
+    .msg-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; position: relative; overflow: hidden; }
     .msg-card-bar { position: absolute; top: 0; left: 0; width: 3px; height: 100%; border-radius: 4px 0 0 4px; }
     .msg-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
     .msg-card-label { font-size: 10px; letter-spacing: 2px; font-family: monospace; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
-    .badge-principal { font-size: 9px; letter-spacing: 1px; color: #000; border-radius: 20px; padding: 2px 8px; font-family: monospace; font-weight: 800; }
+    .badge-principal { font-size: 9px; letter-spacing: 1px; color: white; border-radius: 20px; padding: 2px 8px; font-family: monospace; font-weight: 800; }
     .msg-text { color: var(--text); font-size: 15px; line-height: 1.65; font-style: italic; }
     .copy-btn {
-      background: #ffffff08; border: 1px solid #2a2a3a; color: #555;
+      background: var(--bg); border: 1px solid var(--border); color: var(--muted);
       border-radius: 6px; padding: 3px 11px; font-size: 11px;
       cursor: pointer; font-family: monospace; transition: all 0.2s; flex-shrink: 0;
     }
-    .copy-btn.ok { background: #22c55e18; border-color: #22c55e55; color: #22c55e; }
+    .copy-btn.ok { background: #e8f8ed; border-color: #22c55e55; color: #22c55e; }
 
-    /* Não enviar */
-    .no-send-item { display: flex; align-items: flex-start; gap: 10px; background: #1a0808; border: 1px solid #2a1010; border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; }
+    .no-send-item { display: flex; align-items: flex-start; gap: 10px; background: #fff5f5; border: 1px solid #fdd; border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; }
     .no-send-x { color: #ef4444; font-size: 12px; flex-shrink: 0; margin-top: 1px; }
-    .no-send-text { color: #c08080; font-size: 13px; font-style: italic; line-height: 1.5; }
+    .no-send-text { color: #a33; font-size: 13px; font-style: italic; line-height: 1.5; }
+
+    /* Stage tracker */
+    .stage-bar { display: flex; align-items: center; gap: 0; margin-bottom: 18px; }
+    .stage-node { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
+    .stage-circle { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.3s; }
+    .stage-lbl { font-size: 8px; color: var(--muted); font-family: monospace; text-align: center; white-space: nowrap; }
+    .stage-conn { flex: 1; height: 2px; background: var(--border); min-width: 8px; transition: background 0.3s; }
+    .stage-node.done .stage-circle { border-color: #22c55e; background: #e8f8ed; }
+    .stage-node.done .stage-lbl { color: #22c55e; }
+    .stage-node.current .stage-circle { border-color: var(--accent); background: #e8f4ff; box-shadow: 0 0 10px #0084ff30; }
+    .stage-node.current .stage-lbl { color: var(--accent); font-weight: 700; }
+    .stage-conn.done { background: #22c55e66; }
+    .stage-conn.current { background: linear-gradient(90deg,#22c55e66,#0084ff44); }
 
     /* Spinner */
     .spinner-wrap { text-align: center; padding: 44px 0; }
-    .spinner { width: 34px; height: 34px; border: 2px solid #1a1a28; border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; margin: 0 auto 14px; }
+    .spinner { width: 34px; height: 34px; border: 2px solid var(--border); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; margin: 0 auto 14px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner-label { color: var(--muted); font-size: 12px; font-family: monospace; }
 
-    /* Error */
-    .error-box { margin-top: 14px; background: #180404; border: 1px solid #440000; border-radius: 10px; padding: 12px 16px; color: #ff7070; font-size: 12px; font-family: monospace; }
+    .error-box { margin-top: 14px; background: #fff5f5; border: 1px solid #fdd; border-radius: 10px; padding: 12px 16px; color: #cc0000; font-size: 12px; font-family: monospace; }
 
-    /* Stage tracker */
-    .stage-bar { display: flex; align-items: center; gap: 0; margin-bottom: 24px; }
-    .stage-node { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
-    .stage-circle { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.3s; }
-    .stage-label { font-size: 8px; color: var(--muted); font-family: monospace; text-align: center; white-space: nowrap; letter-spacing: 0.5px; }
-    .stage-conn { flex: 1; height: 2px; background: var(--border); min-width: 8px; transition: background 0.3s; }
-    .stage-node.done .stage-circle { border-color: #22c55e; background: #22c55e18; }
-    .stage-node.done .stage-label { color: #22c55e; }
-    .stage-node.current .stage-circle { border-color: var(--accent); background: var(--accent)30; box-shadow: 0 0 12px var(--accent)40; }
-    .stage-node.current .stage-label { color: var(--accent); font-weight: 700; }
-    .stage-conn.done { background: #22c55e66; }
-    .stage-conn.current { background: linear-gradient(90deg, #22c55e66, var(--accent)44); }
-
-    /* Conversation history */
-    .conv-section { margin-top: 14px; }
-    .conv-hint { font-size: 10px; color: #333; font-family: monospace; margin-top: 4px; line-height: 1.6; }
-
-    /* Toast */
     .toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      position: fixed; bottom: calc(var(--nav-h) + 10px); left: 50%; transform: translateX(-50%);
       background: #22c55e; color: #000; font-family: monospace; font-weight: 700;
-      font-size: 12px; padding: 10px 20px; border-radius: 99px; letter-spacing: 1px;
+      font-size: 12px; padding: 10px 20px; border-radius: 99px;
       opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999;
     }
     .toast.show { opacity: 1; }
@@ -224,510 +382,653 @@
 </head>
 <body>
 
-<div class="container">
+<div id="appWrap">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="header-tag">SOCIAL INTELLIGENCE ENGINE</div>
-    <h1>Reply Coach <span>V4</span></h1>
-    <p class="subtitle">Tinder · Instagram · WhatsApp — psicologia aplicada.</p>
+  <!-- ── CONVERSAS ── -->
+  <div id="viewConvs" class="view active">
+    <div class="topbar">Conversas</div>
+    <div class="conv-list" id="convList"></div>
+    <div class="empty-state" id="convEmpty" style="display:none">
+      <div class="ei">💬</div>
+      <p>Nenhuma conversa ainda.</p>
+      <p style="margin-top:6px;font-size:13px">Analise um perfil para começar.</p>
+      <button class="empty-cta" onclick="showView('analyze')">✏️ Nova análise</button>
+    </div>
   </div>
 
-  <!-- Profile Panel -->
-  <button class="profile-toggle" id="profileToggle" onclick="toggleProfile()">
-    <span id="profileLabel">👤 <span style="color:#4a4a62">Salvar perfil da pessoa (opcional)</span></span>
-    <span style="font-size:9px;color:#4a4a62">▼</span>
-  </button>
-  <div class="profile-body" id="profileBody">
-    <div class="profile-grid">
-      <div>
-        <span class="section-label">Nome</span>
-        <input id="pName" type="text" placeholder="Ju, Ana, Laís..." oninput="updateProfileLabel()" />
+  <!-- ── CHAT ── -->
+  <div id="viewChat" class="view">
+    <div class="chat-topbar">
+      <button class="chat-back" onclick="backToConvs()">‹</button>
+      <div class="chat-av-sm" id="chatAvSm">?</div>
+      <div class="chat-hdr-info">
+        <div class="chat-hdr-name" id="chatName">—</div>
+        <div class="chat-hdr-sub"  id="chatSub">Reply Coach</div>
       </div>
-      <div>
-        <span class="section-label">App</span>
-        <select id="pApp" oninput="updateProfileLabel()">
-          <option value="">Detectar auto</option>
-          <option value="Tinder">Tinder</option>
-          <option value="Instagram">Instagram</option>
-          <option value="WhatsApp">WhatsApp</option>
-        </select>
-      </div>
+      <button class="chat-analyze-btn" id="chatAnalyzeBtn" onclick="analyzeFromChat()">⚡ Analisar</button>
     </div>
-    <span class="section-label">Contexto (jeito de ser, interesses, onde se conheceram)</span>
-    <textarea id="pNotes" rows="2" placeholder="Ex: trabalha em moda, adora viajar, conheceram num evento..."></textarea>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button onclick="saveProfile()" id="saveBtn" style="flex:1;background:#1a2818;border:1px solid #2a3828;color:#4a7a44;border-radius:8px;padding:9px 0;font-size:12px;font-family:monospace;cursor:pointer;font-weight:700;">Salvar perfil</button>
-      <button onclick="clearProfile()" id="clearBtn" style="display:none;background:#180808;border:1px solid #2a1010;color:#663333;border-radius:8px;padding:9px 14px;font-size:11px;font-family:monospace;cursor:pointer;">Limpar</button>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-bar">
+      <input id="chatHerInput" type="text" placeholder="Ela respondeu..."
+        onkeydown="if(event.key==='Enter')addHerMsg()"/>
+      <button class="chat-send-btn" onclick="addHerMsg()">↑</button>
     </div>
   </div>
 
-  <!-- App Selector -->
-  <span class="section-label">APP (ou deixe detectar automaticamente)</span>
-  <div class="app-selector">
-    <button class="app-btn active-auto" data-app="auto"      onclick="selectApp('auto')">🤖 Auto</button>
-    <button class="app-btn"             data-app="tinder"    onclick="selectApp('tinder')">❤️ Tinder</button>
-    <button class="app-btn"             data-app="instagram" onclick="selectApp('instagram')">📷 Instagram</button>
-    <button class="app-btn"             data-app="whatsapp"  onclick="selectApp('whatsapp')">💬 WhatsApp</button>
-  </div>
+  <!-- ── ANALISAR ── -->
+  <div id="viewAnalyze" class="view">
+    <div class="analyze-wrap">
+      <div class="container">
 
-  <!-- Memory Mode -->
-  <span class="section-label">MOMENTO DA CONVERSA</span>
-  <div class="memory-selector">
-    <button class="mem-btn active" data-mem="primeiro-contato" onclick="selectMemory('primeiro-contato')">👋<br>Primeiro<br>contato</button>
-    <button class="mem-btn"        data-mem="em-andamento"     onclick="selectMemory('em-andamento')">💬<br>Já<br>conversamos</button>
-    <button class="mem-btn"        data-mem="reaquecendo"      onclick="selectMemory('reaquecendo')">🔥<br>Reaquecer</button>
-  </div>
+        <div class="header">
+          <div class="header-tag">SOCIAL INTELLIGENCE ENGINE</div>
+          <h1>Reply Coach <span>V5</span></h1>
+          <p class="subtitle">Tinder · Instagram · WhatsApp — psicologia aplicada.</p>
+        </div>
 
-  <!-- Instagram: ela me conhece? -->
-  <div id="igKnowsSection" style="display:none">
-    <span class="section-label">ELA JÁ TE CONHECE?</span>
-    <div class="knows-selector">
-      <button class="knows-btn active" data-knows="false" onclick="selectKnows(false)">👤 Não me conhece</button>
-      <button class="knows-btn"        data-knows="true"  onclick="selectKnows(true)">✨ Já me conhece</button>
-    </div>
-  </div>
+        <button class="profile-toggle" id="profileToggle" onclick="toggleProfile()">
+          <span id="profileLabel">👤 <span style="color:var(--muted)">Salvar perfil da pessoa (opcional)</span></span>
+          <span style="font-size:9px;color:var(--muted)">▼</span>
+        </button>
+        <div class="profile-body" id="profileBody">
+          <div class="profile-grid">
+            <div>
+              <span class="section-label">Nome</span>
+              <input id="pName" type="text" placeholder="Ju, Ana, Laís..." oninput="updateProfileLabel()"/>
+            </div>
+            <div>
+              <span class="section-label">App</span>
+              <select id="pApp" oninput="updateProfileLabel()">
+                <option value="">Detectar auto</option>
+                <option value="Tinder">Tinder</option>
+                <option value="Instagram">Instagram</option>
+                <option value="WhatsApp">WhatsApp</option>
+              </select>
+            </div>
+          </div>
+          <span class="section-label">Contexto</span>
+          <textarea id="pNotes" rows="2" placeholder="Ex: trabalha em moda, adora viajar..."></textarea>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button onclick="saveProfile()" id="saveBtn" style="flex:1;background:#e8f5e9;border:1px solid #a5d6a7;color:#2e7d32;border-radius:8px;padding:9px;font-size:12px;font-family:monospace;cursor:pointer;font-weight:700;">Salvar perfil</button>
+            <button onclick="clearProfile()" id="clearBtn" style="display:none;background:#ffebee;border:1px solid #ffcdd2;color:#c62828;border-radius:8px;padding:9px 14px;font-size:11px;font-family:monospace;cursor:pointer;">Limpar</button>
+          </div>
+        </div>
 
-  <!-- Multi-Upload -->
-  <span class="section-label">UPLOADS (prints do perfil / story / conversa)</span>
-  <div class="upload-zone" id="uploadZone"
-    onclick="triggerUpload()"
-    ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
-    <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="onFileChange(event)" />
-    <div class="upload-inner" id="uploadInner">
-      <div class="upload-icon">📎</div>
-      <div class="upload-label">Arraste prints / fotos ou clique</div>
-      <div class="upload-sub">até 4 imagens · JPG · PNG · WEBP</div>
-    </div>
-  </div>
-  <div class="img-thumbs" id="imgThumbs"></div>
+        <span class="section-label">APP</span>
+        <div class="app-selector">
+          <button class="app-btn active-auto" data-app="auto"      onclick="selectApp('auto')">🤖 Auto</button>
+          <button class="app-btn"             data-app="tinder"    onclick="selectApp('tinder')">❤️ Tinder</button>
+          <button class="app-btn"             data-app="instagram" onclick="selectApp('instagram')">📷 Instagram</button>
+          <button class="app-btn"             data-app="whatsapp"  onclick="selectApp('whatsapp')">💬 WhatsApp</button>
+        </div>
 
-  <!-- Text Input -->
-  <span class="section-label" style="margin-top:4px">OU DESCREVA / COLE A CONVERSA</span>
-  <textarea id="textInput" rows="5"
-    placeholder="Exemplos:&#10;• Tinder: bio dela + o que tem nas fotos&#10;• Instagram: story que ela postou&#10;• WhatsApp: últimas mensagens trocadas"
-    oninput="updateBtn()"></textarea>
+        <span class="section-label">MOMENTO DA CONVERSA</span>
+        <div class="memory-selector">
+          <button class="mem-btn active" data-mem="primeiro-contato" onclick="selectMemory('primeiro-contato')">👋<br>Primeiro<br>contato</button>
+          <button class="mem-btn"        data-mem="em-andamento"     onclick="selectMemory('em-andamento')">💬<br>Já<br>conversamos</button>
+          <button class="mem-btn"        data-mem="reaquecendo"      onclick="selectMemory('reaquecendo')">🔥<br>Reaquecer</button>
+        </div>
 
-  <!-- Conversation History -->
-  <div class="conv-section">
-    <span class="section-label">💬 O QUE ELA RESPONDEU / HISTÓRICO (opcional — para continuar a conversa)</span>
-    <textarea id="convHistoryTA" rows="4"
-      placeholder="Cole aqui a resposta dela ou a conversa até agora para continuar de forma fluida...
+        <div id="igKnowsSection" style="display:none">
+          <span class="section-label">ELA JÁ TE CONHECE?</span>
+          <div class="knows-selector">
+            <button class="knows-btn active" data-knows="false" onclick="selectKnows(false)">👤 Não me conhece</button>
+            <button class="knows-btn"        data-knows="true"  onclick="selectKnows(true)">✨ Já me conhece</button>
+          </div>
+        </div>
+
+        <span class="section-label">UPLOADS (prints do perfil / story / conversa)</span>
+        <div class="upload-zone" id="uploadZone"
+          onclick="triggerUpload()"
+          ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+          <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="onFileChange(event)"/>
+          <div class="upload-inner" id="uploadInner">
+            <div class="upload-icon">📎</div>
+            <div class="upload-label">Arraste prints / fotos ou clique</div>
+            <div class="upload-sub">até 4 imagens · JPG · PNG · WEBP</div>
+          </div>
+        </div>
+        <div class="img-thumbs" id="imgThumbs"></div>
+
+        <span class="section-label" style="margin-top:4px">DESCREVA / COLE O PERFIL OU CONTEXTO</span>
+        <textarea id="textInput" rows="4"
+          placeholder="• Tinder: bio dela + fotos&#10;• Instagram: story que ela postou&#10;• WhatsApp: situação atual"
+          oninput="updateBtn()"></textarea>
+
+        <div class="conv-section">
+          <span class="section-label">💬 O QUE ELA RESPONDEU / HISTÓRICO (para continuar a conversa)</span>
+          <textarea id="convHistoryTA" rows="4"
+            placeholder="Cole aqui a resposta dela ou a conversa até agora...
 
 Ex:
 Você: vi que você gosta de trilha
 Ela: sim! fui no pico do jaraguá semana passada
-Você: que incrível, ainda não fui lá
+Você: que incrível
 Ela: você deveria ir, a vista é demais 😍"></textarea>
-    <p class="conv-hint">💡 Com o histórico, as sugestões se encaixam naturalmente na conversa — sem parecer recomeço.</p>
+          <p class="conv-hint">💡 Com o histórico, as sugestões continuam naturalmente — sem recomeçar.</p>
+        </div>
+
+        <button class="btn-analyze" id="analyzeBtn" onclick="doAnalyze()" disabled>
+          ⚡ Analisar & gerar mensagens
+        </button>
+
+        <div class="error-box" id="errorBox" style="display:none"></div>
+        <div class="spinner-wrap" id="spinner" style="display:none">
+          <div class="spinner" id="spinnerEl"></div>
+          <div class="spinner-label">Analisando perfil...</div>
+        </div>
+        <div class="result" id="result" style="display:none"></div>
+
+      </div>
+    </div>
   </div>
-
-  <!-- Analyze Button -->
-  <button class="btn-analyze" id="analyzeBtn" onclick="analyze()" disabled>
-    ⚡ Analisar & gerar mensagens
-  </button>
-
-  <!-- Error -->
-  <div class="error-box" id="errorBox" style="display:none"></div>
-
-  <!-- Spinner -->
-  <div class="spinner-wrap" id="spinner" style="display:none">
-    <div class="spinner" id="spinnerEl"></div>
-    <div class="spinner-label">Analisando perfil...</div>
-  </div>
-
-  <!-- Result -->
-  <div class="result" id="result" style="display:none"></div>
 
 </div>
+
+<nav class="bottom-nav">
+  <button id="navConvs"   class="nav-btn active" onclick="showView('convs')">
+    <span class="ni">💬</span><span>Conversas</span>
+  </button>
+  <button id="navAnalyze" class="nav-btn"        onclick="showView('analyze')">
+    <span class="ni">✏️</span><span>Nova análise</span>
+  </button>
+</nav>
 
 <div class="toast" id="toast">✓ Copiado!</div>
 
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────────
-
-let selectedApp    = "auto";
-let selectedMemory = "primeiro-contato";
+let currentView    = 'convs';
+let selectedApp    = 'auto';
+let selectedMemory = 'primeiro-contato';
 let igKnowsMe      = false;
-let imageFiles     = [];   // array of File
+let imageFiles     = [];
 let profile        = {};
+let conversations  = [];
+let currentConvId  = null;
 
 const MAX_IMAGES = 4;
+const LS_CONVS   = 'rc-conversations';
+const LS_PROFILE = 'rc-profile';
 
-const MODE_COLORS = { tinder: "#ff4458", instagram: "#c13584", whatsapp: "#25d366" };
+const APP_COLORS = { tinder:'#ff4458', instagram:'#c13584', whatsapp:'#25d366', auto:'#0084ff', '':'#0084ff' };
+const MODE_COLORS = { tinder:'#ff4458', instagram:'#c13584', whatsapp:'#25d366' };
 const MODE_LABELS = {
-  tinder:    { emoji: "❤️", label: "TINDER" },
-  instagram: { emoji: "📷", label: "INSTAGRAM" },
-  whatsapp:  { emoji: "💬", label: "WHATSAPP" },
+  tinder:    { emoji:'❤️', label:'TINDER' },
+  instagram: { emoji:'📷', label:'INSTAGRAM' },
+  whatsapp:  { emoji:'💬', label:'WHATSAPP' },
 };
 
-// ─── PROFILE ─────────────────────────────────────────────────────────────────
+// ─── VIEWS ───────────────────────────────────────────────────────────────────
+function showView(v) {
+  currentView = v;
+  const ids = { convs:'viewConvs', chat:'viewChat', analyze:'viewAnalyze' };
+  Object.entries(ids).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (key === v) { el.style.display = key === 'chat' ? 'flex' : 'block'; el.classList.add('active'); }
+    else           { el.style.display = 'none'; el.classList.remove('active'); }
+  });
+  document.getElementById('navConvs').classList.toggle('active',   v === 'convs' || v === 'chat');
+  document.getElementById('navAnalyze').classList.toggle('active', v === 'analyze');
+  if (v === 'convs')   renderConvList();
+  if (v === 'chat' && currentConvId) renderChatView();
+}
 
+// ─── CONVERSATIONS STORAGE ────────────────────────────────────────────────────
+function loadConversations() {
+  try { conversations = JSON.parse(localStorage.getItem(LS_CONVS) || '[]'); }
+  catch { conversations = []; }
+  return conversations;
+}
+function saveConversations() {
+  localStorage.setItem(LS_CONVS, JSON.stringify(conversations));
+}
+function getConv(id) { return conversations.find(c => c.id === id); }
+
+function parseConvHistory(text) {
+  if (!text || !text.trim()) return [];
+  const msgs = [];
+  for (const line of text.split('\n')) {
+    const l = line.trim();
+    if (!l) continue;
+    const meM  = l.match(/^(você|vc|eu|me)\s*:\s*(.*)/i);
+    const herM = l.match(/^(ela|she|her|ele|he)\s*:\s*(.*)/i);
+    if (meM)       msgs.push({ side:'me',  text: meM[2].trim(),  at: Date.now() });
+    else if (herM) msgs.push({ side:'her', text: herM[2].trim(), at: Date.now() });
+    else if (msgs.length > 0) msgs[msgs.length-1].text += '\n' + l;
+    else msgs.push({ side:'her', text: l, at: Date.now() });
+  }
+  return msgs;
+}
+
+function formatDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts), now = new Date();
+  const diff = Math.floor((now - d) / 86400000);
+  if (diff === 0) return 'Hoje';
+  if (diff === 1) return 'Ontem';
+  if (diff < 7)  return d.toLocaleDateString('pt-BR', { weekday: 'short' });
+  return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
+}
+
+function upsertConversation(name, app, messages, stage, analysisResult) {
+  if (!name) return null;
+  const key = name.toLowerCase().trim();
+  let conv = conversations.find(c => c.name.toLowerCase() === key);
+  const isNew = !conv;
+  if (isNew) {
+    conv = { id: Date.now().toString(36)+Math.random().toString(36).slice(2), name:name.trim(), app:app||'auto', messages:[], analyses:[], stage:'', updatedAt:Date.now() };
+    conversations.unshift(conv);
+  }
+  const existingTxts = new Set(conv.messages.map(m => m.text));
+  for (const m of (messages||[])) {
+    if (!existingTxts.has(m.text)) { conv.messages.push(m); existingTxts.add(m.text); }
+  }
+  if (analysisResult) {
+    conv.analyses.push({ at:Date.now(), result:analysisResult });
+    if (analysisResult.estagio) conv.stage = analysisResult.estagio;
+  }
+  if (stage && !analysisResult) conv.stage = stage;
+  if (app && app !== 'auto') conv.app = app;
+  conv.updatedAt = Date.now();
+  if (!isNew) conversations = [conv, ...conversations.filter(c => c.id !== conv.id)];
+  saveConversations();
+  return conv;
+}
+
+function getLastMsg(conv) {
+  if (conv.messages && conv.messages.length) {
+    const l = conv.messages[conv.messages.length-1];
+    return (l.side === 'me' ? 'Você: ' : '') + l.text;
+  }
+  if (conv.analyses && conv.analyses.length) return '⚡ Análise disponível';
+  return 'Toque para ver';
+}
+
+// ─── CONV LIST RENDER ─────────────────────────────────────────────────────────
+function renderConvList() {
+  loadConversations();
+  const list = document.getElementById('convList');
+  const empty = document.getElementById('convEmpty');
+  if (!conversations.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = conversations.map(conv => {
+    const color   = APP_COLORS[conv.app] || '#0084ff';
+    const letter  = conv.name.charAt(0).toUpperCase();
+    const lastMsg = esc(getLastMsg(conv)).substring(0, 55);
+    const date    = formatDate(conv.updatedAt);
+    const appTag  = conv.app && conv.app !== 'auto'
+      ? `<span class="conv-app-tag" style="background:${color}">${conv.app}</span>` : '';
+    const stageIco = { PRIMEIRO_CONTATO:'👋', AQUECENDO:'💬', CONEXAO:'🔥', ENCONTRO:'📍' }[conv.stage] || '';
+    return `
+      <div class="conv-item" onclick="openConv('${conv.id}')">
+        <div class="conv-avatar" style="background:${color}">${letter}</div>
+        <div class="conv-info">
+          <div class="conv-name">${esc(conv.name)} ${stageIco}</div>
+          <div class="conv-last">${lastMsg}</div>
+        </div>
+        <div class="conv-meta">
+          <div class="conv-date">${date}</div>
+          ${appTag}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── OPEN / CLOSE CONV ────────────────────────────────────────────────────────
+function openConv(id) { currentConvId = id; showView('chat'); }
+function backToConvs() { currentConvId = null; showView('convs'); }
+
+function renderChatView() {
+  const conv = getConv(currentConvId);
+  if (!conv) return;
+  const color  = APP_COLORS[conv.app] || '#0084ff';
+  const letter = conv.name.charAt(0).toUpperCase();
+  document.getElementById('chatAvSm').textContent  = letter;
+  document.getElementById('chatAvSm').style.background = color;
+  document.getElementById('chatName').textContent  = conv.name;
+  const appLabel   = conv.app && conv.app !== 'auto' ? conv.app[0].toUpperCase()+conv.app.slice(1) : '';
+  const stageLabel = { PRIMEIRO_CONTATO:'Primeiro contato', AQUECENDO:'Aquecendo', CONEXAO:'Conexão', ENCONTRO:'Encontro 📍' }[conv.stage] || '';
+  document.getElementById('chatSub').textContent = [appLabel, stageLabel].filter(Boolean).join(' · ') || 'Reply Coach';
+  renderBubbles(conv);
+}
+
+function renderBubbles(conv) {
+  const container = document.getElementById('chatMessages');
+  const color  = APP_COLORS[conv.app] || '#0084ff';
+  const letter = conv.name.charAt(0).toUpperCase();
+  let html = '';
+  if (!conv.messages.length && !conv.analyses.length)
+    html = '<div class="chat-date-sep">Sem mensagens ainda — adicione o histórico abaixo</div>';
+  for (const msg of (conv.messages || []))
+    html += bubbleHtml(msg.side, msg.text, letter, color);
+  if (conv.analyses && conv.analyses.length) {
+    const last = conv.analyses[conv.analyses.length-1];
+    if (last.result) html += aiBlockHtml(last.result);
+  }
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+function bubbleHtml(side, text, letter, color) {
+  const isMe = side === 'me';
+  return `
+    <div class="brow ${isMe ? 'me' : 'her'}">
+      ${!isMe ? `<div class="bav" style="background:${color}">${letter}</div>` : ''}
+      <div class="bubble ${isMe ? 'me' : 'her'}">${esc(text)}</div>
+      ${isMe ? '<div class="bspc"></div>' : ''}
+    </div>`;
+}
+
+function aiBlockHtml(r) {
+  const msgs = [
+    r.segura      ? { ico:'🛡️', lbl:'SEGURA',      txt:r.segura }      : null,
+    r.estrategica ? { ico:'⚡',  lbl:'ESTRATÉGICA', txt:r.estrategica } : null,
+    r.diferente   ? { ico:'😏', lbl:'DIFERENTE',    txt:r.diferente }   : null,
+  ].filter(Boolean);
+  if (!msgs.length) return '';
+  return `
+    <div class="ai-block">
+      <div class="ai-block-hdr">⚡ SUGESTÕES DO REPLY COACH</div>
+      ${msgs.map(m => `
+        <div class="ai-sug">
+          <span class="ai-sug-ico">${m.ico}</span>
+          <div class="ai-sug-body">
+            <span class="ai-sug-lbl">${m.lbl}</span>
+            <div class="ai-sug-txt">"${esc(m.txt)}"</div>
+          </div>
+          <button class="ai-use-btn" onclick="useSugg('${escA(m.txt)}')">Enviei</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ─── CHAT ACTIONS ─────────────────────────────────────────────────────────────
+function addHerMsg() {
+  const inp = document.getElementById('chatHerInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  const conv = getConv(currentConvId);
+  if (!conv) return;
+  conv.messages.push({ side:'her', text:txt, at:Date.now() });
+  conv.updatedAt = Date.now();
+  saveConversations();
+  const c = document.getElementById('chatMessages');
+  c.insertAdjacentHTML('beforeend', bubbleHtml('her', txt, conv.name.charAt(0).toUpperCase(), APP_COLORS[conv.app]||'#0084ff'));
+  c.scrollTop = c.scrollHeight;
+}
+
+function useSugg(txt) {
+  const conv = getConv(currentConvId);
+  if (!conv) return;
+  conv.messages.push({ side:'me', text:txt, at:Date.now() });
+  conv.updatedAt = Date.now();
+  saveConversations();
+  const c = document.getElementById('chatMessages');
+  c.insertAdjacentHTML('beforeend', bubbleHtml('me', txt, '', '#0084ff'));
+  c.scrollTop = c.scrollHeight;
+  document.getElementById('chatHerInput').focus();
+  showToast('✓ Registrada!');
+}
+
+async function analyzeFromChat() {
+  const conv = getConv(currentConvId);
+  if (!conv) return;
+  const btn = document.getElementById('chatAnalyzeBtn');
+  btn.textContent = '⏳'; btn.disabled = true;
+  const hist = conv.messages.map(m => `${m.side==='me'?'Você':'Ela'}: ${m.text}`).join('\n');
+  const fd = new FormData();
+  fd.append('text',                 `Continuação — ${conv.name}`);
+  fd.append('app_hint',             conv.app || 'auto');
+  fd.append('memory_mode',          ['CONEXAO','ENCONTRO'].includes(conv.stage) ? 'em-andamento' : conv.stage==='AQUECENDO' ? 'em-andamento' : 'primeiro-contato');
+  fd.append('ig_knows_me',          'false');
+  fd.append('profile',              JSON.stringify({ name:conv.name, app:conv.app }));
+  fd.append('conversation_history', hist);
+  try {
+    const res  = await fetch('/analyze', { method:'POST', body:fd });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    conv.analyses.push({ at:Date.now(), result:data.result });
+    if (data.result.estagio) conv.stage = data.result.estagio;
+    conv.updatedAt = Date.now();
+    saveConversations();
+    const stL = { PRIMEIRO_CONTATO:'Primeiro contato', AQUECENDO:'Aquecendo', CONEXAO:'Conexão', ENCONTRO:'Encontro 📍' }[conv.stage] || '';
+    const appL = conv.app && conv.app!=='auto' ? conv.app[0].toUpperCase()+conv.app.slice(1) : '';
+    document.getElementById('chatSub').textContent = [appL, stL].filter(Boolean).join(' · ') || 'Reply Coach';
+    const c = document.getElementById('chatMessages');
+    c.insertAdjacentHTML('beforeend', aiBlockHtml(data.result));
+    c.scrollTop = c.scrollHeight;
+  } catch(e) { alert('Erro: '+e.message); }
+  finally { btn.textContent = '⚡ Analisar'; btn.disabled = false; }
+}
+
+// ─── ANALYZE FORM ─────────────────────────────────────────────────────────────
 function loadProfile() {
   try {
-    const raw = localStorage.getItem("rc-profile");
+    const raw = localStorage.getItem(LS_PROFILE);
     if (raw) {
       profile = JSON.parse(raw);
-      document.getElementById("pName").value  = profile.name  || "";
-      document.getElementById("pApp").value   = profile.app   || "";
-      document.getElementById("pNotes").value = profile.notes || "";
+      document.getElementById('pName').value  = profile.name  || '';
+      document.getElementById('pApp').value   = profile.app   || '';
+      document.getElementById('pNotes').value = profile.notes || '';
       updateProfileLabel();
     }
   } catch {}
 }
-
 function saveProfile() {
-  profile = {
-    name:  document.getElementById("pName").value.trim(),
-    app:   document.getElementById("pApp").value,
-    notes: document.getElementById("pNotes").value.trim(),
-  };
-  localStorage.setItem("rc-profile", JSON.stringify(profile));
+  profile = { name:document.getElementById('pName').value.trim(), app:document.getElementById('pApp').value, notes:document.getElementById('pNotes').value.trim() };
+  localStorage.setItem(LS_PROFILE, JSON.stringify(profile));
   updateProfileLabel();
-  const btn = document.getElementById("saveBtn");
-  btn.textContent = "✓ Salvo!";
-  btn.style.color = "#22c55e";
-  btn.style.borderColor = "#22c55e44";
-  setTimeout(() => {
-    btn.textContent = "Salvar perfil";
-    btn.style.color = "#4a7a44";
-    btn.style.borderColor = "#2a3828";
-    toggleProfile();
-  }, 1400);
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = '✓ Salvo!'; btn.style.color='#22c55e'; btn.style.borderColor='#a5d6a7';
+  setTimeout(() => { btn.textContent='Salvar perfil'; btn.style.color='#2e7d32'; btn.style.borderColor='#a5d6a7'; toggleProfile(); }, 1400);
 }
-
 function clearProfile() {
   profile = {};
-  document.getElementById("pName").value  = "";
-  document.getElementById("pApp").value   = "";
-  document.getElementById("pNotes").value = "";
-  localStorage.removeItem("rc-profile");
+  document.getElementById('pName').value = document.getElementById('pApp').value = document.getElementById('pNotes').value = '';
+  localStorage.removeItem(LS_PROFILE);
   updateProfileLabel();
 }
-
 function updateProfileLabel() {
-  const name = document.getElementById("pName").value.trim();
-  const app  = document.getElementById("pApp").value;
-  const lbl  = document.getElementById("profileLabel");
-  const clearBtn = document.getElementById("clearBtn");
-  if (name) {
-    lbl.innerHTML = `👤 Perfil salvo: <strong style="color:#fff">${name}</strong>${app ? ` <span style="color:#4a4a62">· ${app}</span>` : ""}`;
-    clearBtn.style.display = "inline-block";
-  } else {
-    lbl.innerHTML = `👤 <span style="color:#4a4a62">Salvar perfil da pessoa (opcional)</span>`;
-    clearBtn.style.display = "none";
-  }
+  const name = document.getElementById('pName').value.trim();
+  const app  = document.getElementById('pApp').value;
+  const lbl  = document.getElementById('profileLabel');
+  document.getElementById('clearBtn').style.display = name ? 'inline-block' : 'none';
+  lbl.innerHTML = name
+    ? `👤 Perfil salvo: <strong style="color:var(--text)">${name}</strong>${app ? ` <span style="color:var(--muted)">· ${app}</span>` : ''}`
+    : `👤 <span style="color:var(--muted)">Salvar perfil da pessoa (opcional)</span>`;
 }
-
 function toggleProfile() {
-  document.getElementById("profileBody").classList.toggle("open");
-  document.getElementById("profileToggle").classList.toggle("open");
+  document.getElementById('profileBody').classList.toggle('open');
+  document.getElementById('profileToggle').classList.toggle('open');
 }
-
-// ─── APP SELECTOR ─────────────────────────────────────────────────────────────
 
 function selectApp(app) {
   selectedApp = app;
-  document.querySelectorAll(".app-btn").forEach(b => {
-    b.className = "app-btn";
-    if (b.dataset.app === app) b.classList.add(`active-${app}`);
-  });
-  document.getElementById("igKnowsSection").style.display = app === "instagram" ? "block" : "none";
+  document.querySelectorAll('.app-btn').forEach(b => { b.className='app-btn'; if(b.dataset.app===app) b.classList.add(`active-${app}`); });
+  document.getElementById('igKnowsSection').style.display = app==='instagram' ? 'block' : 'none';
   updateBtn();
 }
-
-// ─── MEMORY SELECTOR ─────────────────────────────────────────────────────────
-
 function selectMemory(mem) {
   selectedMemory = mem;
-  document.querySelectorAll(".mem-btn").forEach(b => {
-    b.classList.toggle("active", b.dataset.mem === mem);
-  });
+  document.querySelectorAll('.mem-btn').forEach(b => b.classList.toggle('active', b.dataset.mem===mem));
 }
-
-// ─── INSTAGRAM KNOWS ─────────────────────────────────────────────────────────
-
 function selectKnows(knows) {
   igKnowsMe = knows;
-  document.querySelectorAll(".knows-btn").forEach(b => {
-    b.classList.toggle("active", b.dataset.knows === String(knows));
-  });
+  document.querySelectorAll('.knows-btn').forEach(b => b.classList.toggle('active', b.dataset.knows===String(knows)));
 }
 
-// ─── MULTI-UPLOAD ─────────────────────────────────────────────────────────────
-
-function triggerUpload() { document.getElementById("fileInput").click(); }
-
-function onDragOver(e)  { e.preventDefault(); document.getElementById("uploadZone").classList.add("drag"); }
-function onDragLeave()  { document.getElementById("uploadZone").classList.remove("drag"); }
-function onDrop(e) {
-  e.preventDefault();
-  document.getElementById("uploadZone").classList.remove("drag");
-  addFiles(Array.from(e.dataTransfer.files));
-}
-function onFileChange(e) {
-  addFiles(Array.from(e.target.files));
-  e.target.value = "";
-}
-
+function triggerUpload() { document.getElementById('fileInput').click(); }
+function onDragOver(e)   { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag'); }
+function onDragLeave()   { document.getElementById('uploadZone').classList.remove('drag'); }
+function onDrop(e) { e.preventDefault(); document.getElementById('uploadZone').classList.remove('drag'); addFiles(Array.from(e.dataTransfer.files)); }
+function onFileChange(e) { addFiles(Array.from(e.target.files)); e.target.value=''; }
 function addFiles(files) {
-  for (const f of files) {
-    if (!f.type.startsWith("image/")) continue;
-    if (imageFiles.length >= MAX_IMAGES) break;
-    imageFiles.push(f);
-  }
-  renderThumbs();
-  updateBtn();
+  for (const f of files) { if (!f.type.startsWith('image/')) continue; if (imageFiles.length>=MAX_IMAGES) break; imageFiles.push(f); }
+  renderThumbs(); updateBtn();
 }
-
-function removeFile(idx) {
-  imageFiles.splice(idx, 1);
-  renderThumbs();
-  updateBtn();
-}
-
+function removeFile(idx) { imageFiles.splice(idx,1); renderThumbs(); updateBtn(); }
 function renderThumbs() {
-  const container = document.getElementById("imgThumbs");
-  container.innerHTML = "";
-
-  imageFiles.forEach((f, i) => {
-    const url  = URL.createObjectURL(f);
-    const wrap = document.createElement("div");
-    wrap.className = "img-thumb";
-    wrap.innerHTML = `
-      <img src="${url}" alt="img ${i+1}" />
-      <button class="img-thumb-rm" onclick="removeFile(${i})">✕</button>
-    `;
-    container.appendChild(wrap);
+  const c = document.getElementById('imgThumbs');
+  c.innerHTML = '';
+  imageFiles.forEach((f,i) => {
+    const url=URL.createObjectURL(f), wrap=document.createElement('div');
+    wrap.className='img-thumb';
+    wrap.innerHTML=`<img src="${url}"/><button class="img-thumb-rm" onclick="removeFile(${i})">✕</button>`;
+    c.appendChild(wrap);
   });
-
-  if (imageFiles.length < MAX_IMAGES) {
-    const addBtn = document.createElement("div");
-    addBtn.className = "add-img-btn";
-    addBtn.textContent = "+";
-    addBtn.onclick = triggerUpload;
-    container.appendChild(addBtn);
+  if (imageFiles.length<MAX_IMAGES) {
+    const b=document.createElement('div'); b.className='add-img-btn'; b.textContent='+'; b.onclick=triggerUpload; c.appendChild(b);
   }
-
-  const zone = document.getElementById("uploadZone");
-  const inner = document.getElementById("uploadInner");
-  if (imageFiles.length > 0) {
-    zone.style.minHeight = "48px";
-    inner.innerHTML = `<div class="upload-label" style="font-size:11px">+ adicionar mais prints</div>`;
+  const zone=document.getElementById('uploadZone'), inner=document.getElementById('uploadInner');
+  if (imageFiles.length>0) {
+    zone.style.minHeight='48px';
+    inner.innerHTML='<div class="upload-label" style="font-size:11px">+ adicionar mais prints</div>';
   } else {
-    zone.style.minHeight = "90px";
-    inner.innerHTML = `
-      <div class="upload-icon">📎</div>
-      <div class="upload-label">Arraste prints / fotos ou clique</div>
-      <div class="upload-sub">até 4 imagens · JPG · PNG · WEBP</div>
-    `;
+    zone.style.minHeight='90px';
+    inner.innerHTML='<div class="upload-icon">📎</div><div class="upload-label">Arraste prints / fotos ou clique</div><div class="upload-sub">até 4 imagens · JPG · PNG · WEBP</div>';
   }
 }
-
-// ─── BUTTON STATE ─────────────────────────────────────────────────────────────
-
 function updateBtn() {
-  const text = document.getElementById("textInput").value.trim();
-  const btn  = document.getElementById("analyzeBtn");
-  const can  = !!text || imageFiles.length > 0;
-  btn.disabled = !can;
-  const color = selectedApp !== "auto" ? MODE_COLORS[selectedApp] : "#7c6af7";
-  btn.style.background = can ? `linear-gradient(135deg, ${color}, ${color}aa)` : "";
-  btn.style.boxShadow  = can ? `0 4px 24px ${color}33` : "none";
+  const txt=document.getElementById('textInput').value.trim();
+  const btn=document.getElementById('analyzeBtn');
+  const can=!!txt||imageFiles.length>0;
+  btn.disabled=!can;
+  const color=selectedApp!=='auto' ? (MODE_COLORS[selectedApp]||'#0084ff') : '#0084ff';
+  btn.style.background=can?`linear-gradient(135deg,${color},${color}aa)`:'';
+  btn.style.boxShadow=can?`0 4px 24px ${color}33`:'none';
 }
 
-// ─── ANALYZE ─────────────────────────────────────────────────────────────────
-
-async function analyze() {
-  const text = document.getElementById("textInput").value.trim();
-  if (!text && imageFiles.length === 0) return;
-
+async function doAnalyze() {
+  const text = document.getElementById('textInput').value.trim();
+  if (!text && imageFiles.length===0) return;
   setLoading(true);
-  document.getElementById("errorBox").style.display  = "none";
-  document.getElementById("result").style.display    = "none";
-
-  const convHist = document.getElementById("convHistoryTA").value.trim();
-
+  document.getElementById('errorBox').style.display='none';
+  document.getElementById('result').style.display='none';
+  const convHist = document.getElementById('convHistoryTA').value.trim();
   const fd = new FormData();
-  if (text) fd.append("text", text);
-  fd.append("app_hint",             selectedApp);
-  fd.append("memory_mode",          selectedMemory);
-  fd.append("ig_knows_me",          String(igKnowsMe));
-  fd.append("profile",              JSON.stringify(profile));
-  fd.append("conversation_history", convHist);
-  imageFiles.forEach(f => fd.append("images", f));
-
+  if (text) fd.append('text', text);
+  fd.append('app_hint',             selectedApp);
+  fd.append('memory_mode',          selectedMemory);
+  fd.append('ig_knows_me',          String(igKnowsMe));
+  fd.append('profile',              JSON.stringify(profile));
+  fd.append('conversation_history', convHist);
+  imageFiles.forEach(f => fd.append('images', f));
   try {
-    const res  = await fetch("/analyze", { method: "POST", body: fd });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Erro desconhecido.");
+    const res=await fetch('/analyze',{method:'POST',body:fd});
+    const data=await res.json();
+    if (!data.ok) throw new Error(data.error||'Erro desconhecido.');
     renderResult(data.result);
-  } catch (e) {
-    document.getElementById("errorBox").textContent    = e.message;
-    document.getElementById("errorBox").style.display  = "block";
-  } finally {
-    setLoading(false);
-  }
+    // Auto-save
+    const name = profile.name || document.getElementById('pName').value.trim();
+    if (name) {
+      const app = selectedApp!=='auto' ? selectedApp : (profile.app?profile.app.toLowerCase():'auto');
+      upsertConversation(name, app, parseConvHistory(convHist), data.result.estagio, data.result);
+    }
+  } catch(e) {
+    document.getElementById('errorBox').textContent=e.message;
+    document.getElementById('errorBox').style.display='block';
+  } finally { setLoading(false); }
 }
 
 function setLoading(on) {
-  document.getElementById("spinner").style.display = on ? "block" : "none";
-  document.getElementById("analyzeBtn").disabled   = on;
-  const color = selectedApp !== "auto" ? MODE_COLORS[selectedApp] : "#7c6af7";
-  document.getElementById("spinnerEl").style.borderTopColor = color;
-  document.getElementById("analyzeBtn").textContent = on ? "⏳ Analisando..." : "⚡ Analisar & gerar mensagens";
+  document.getElementById('spinner').style.display=on?'block':'none';
+  document.getElementById('analyzeBtn').disabled=on;
+  const color=selectedApp!=='auto'?(MODE_COLORS[selectedApp]||'#0084ff'):'#0084ff';
+  document.getElementById('spinnerEl').style.borderTopColor=color;
+  document.getElementById('analyzeBtn').textContent=on?'⏳ Analisando...':'⚡ Analisar & gerar mensagens';
 }
 
-// ─── RENDER ──────────────────────────────────────────────────────────────────
-
+// ─── RESULT RENDER ────────────────────────────────────────────────────────────
 function renderResult(r) {
-  const color = MODE_COLORS[r.modo] || "#7c6af7";
-  const meta  = MODE_LABELS[r.modo] || { emoji: "💬", label: r.modo.toUpperCase() };
-
-  let html = `
-    <div class="mode-badge" style="background:${color}18;border:1px solid ${color}44;color:${color}">
-      <span>${meta.emoji}</span> ${meta.label} DETECTADO
-    </div>
-  `;
-
-  if (r.analise)          html += infoBlock("📊 Análise do perfil",  r.analise,          color);
-  if (r.descricao_fisica) html += infoBlock("💃 Descrição física",   r.descricao_fisica, color);
-  if (r.leitura)          html += infoBlock("🧠 Leitura social",     r.leitura,          color);
-  if (r.estrategia)       html += infoBlock("🎯 Estratégia",         r.estrategia,       color, true);
-  if (r.estagio)          html += stageBar(r.estagio);
-
-  html += `
-    <div class="info-block">
-      <div class="info-block-header">
-        <span class="info-block-label">💬 Mensagens</span>
-        <div class="info-block-line"></div>
-      </div>
-      ${msgCard("Segura",      "🛡️",  "#4a9eff", r.segura,      false)}
-      ${msgCard("Estratégica", "⚡",   color,     r.estrategica, true)}
-      ${msgCard("Diferente",   "😏",  "#a855f7", r.diferente,   false)}
-    </div>
-  `;
-
-  if (r.nao_enviar && r.nao_enviar.length > 0) {
-    html += `
-      <div class="info-block">
-        <div class="info-block-header">
-          <span class="info-block-label">🚫 Não enviar</span>
-          <div class="info-block-line"></div>
-        </div>
-        <div class="info-card">
-          ${r.nao_enviar.map(x => `
-            <div class="no-send-item">
-              <span class="no-send-x">✗</span>
-              <span class="no-send-text">"${esc(x)}"</span>
-            </div>
-          `).join("")}
-        </div>
-      </div>
-    `;
-  }
-
-  if (r.aprendizado) html += infoBlock("🧬 Micro aprendizado", r.aprendizado, "#7c6af7");
-
-  const resultEl = document.getElementById("result");
-  resultEl.innerHTML = html;
-  resultEl.style.display = "block";
-  resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  const color=MODE_COLORS[r.modo]||'#0084ff';
+  const meta=MODE_LABELS[r.modo]||{emoji:'💬',label:r.modo.toUpperCase()};
+  let html=`<div class="mode-badge" style="background:${color}18;border:1px solid ${color}44;color:${color}"><span>${meta.emoji}</span> ${meta.label} DETECTADO</div>`;
+  if (r.analise)          html+=infoBlock('📊 Análise do perfil',  r.analise,          color);
+  if (r.descricao_fisica) html+=infoBlock('💃 Descrição física',   r.descricao_fisica, color);
+  if (r.leitura)          html+=infoBlock('🧠 Leitura social',     r.leitura,          color);
+  if (r.estrategia)       html+=infoBlock('🎯 Estratégia',         r.estrategia,       color, true);
+  if (r.estagio)          html+=stageBar(r.estagio);
+  html+=`<div class="info-block"><div class="info-block-header"><span class="info-block-label">💬 Mensagens</span><div class="info-block-line"></div></div>
+    ${msgCard('Segura','🛡️','#0084ff',r.segura,false)}
+    ${msgCard('Estratégica','⚡',color,r.estrategica,true)}
+    ${msgCard('Diferente','😏','#9c27b0',r.diferente,false)}
+  </div>`;
+  if (r.nao_enviar&&r.nao_enviar.length)
+    html+=`<div class="info-block"><div class="info-block-header"><span class="info-block-label">🚫 Não enviar</span><div class="info-block-line"></div></div><div class="info-card">${r.nao_enviar.map(x=>`<div class="no-send-item"><span class="no-send-x">✗</span><span class="no-send-text">"${esc(x)}"</span></div>`).join('')}</div></div>`;
+  if (r.aprendizado) html+=infoBlock('🧬 Micro aprendizado', r.aprendizado, '#0084ff');
+  const el=document.getElementById('result');
+  el.innerHTML=html; el.style.display='block';
+  el.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function stageBar(estagio) {
-  const stages = [
-    { key: "PRIMEIRO_CONTATO", icon: "👋", label: "Contato" },
-    { key: "AQUECENDO",        icon: "💬", label: "Aquecendo" },
-    { key: "CONEXAO",          icon: "🔥", label: "Conexão" },
-    { key: "ENCONTRO",         icon: "📍", label: "Encontro ✅" },
-  ];
-  const idx = stages.findIndex(s => s.key === estagio);
-  if (idx < 0) return "";
-
-  let html = `
-    <div class="info-block">
-      <div class="info-block-header">
-        <span class="info-block-label">📈 Estágio da conversa</span>
-        <div class="info-block-line"></div>
-      </div>
-      <div class="info-card" style="padding:18px 20px">
-        <div class="stage-bar">`;
-
-  stages.forEach((s, i) => {
-    const cls = i < idx ? "done" : i === idx ? "current" : "";
-    html += `<div class="stage-node ${cls}">
-      <div class="stage-circle">${s.icon}</div>
-      <div class="stage-label">${s.label}</div>
-    </div>`;
-    if (i < stages.length - 1) {
-      const connCls = i < idx ? "done" : i === idx ? "current" : "";
-      html += `<div class="stage-conn ${connCls}"></div>`;
-    }
-  });
-
-  html += `</div></div></div>`;
-  return html;
-}
-
-function infoBlock(label, content, color, italic = false) {
-  return `
-    <div class="info-block">
-      <div class="info-block-header">
-        <span class="info-block-label">${label}</span>
-        <div class="info-block-line" style="background:linear-gradient(90deg,${color}33,transparent)"></div>
-      </div>
-      <div class="info-card"><p style="${italic ? 'font-style:italic' : ''}">${esc(content)}</p></div>
+function infoBlock(label, content, color, italic=false) {
+  return `<div class="info-block">
+    <div class="info-block-header">
+      <span class="info-block-label">${label}</span>
+      <div class="info-block-line" style="background:linear-gradient(90deg,${color}33,transparent)"></div>
     </div>
-  `;
+    <div class="info-card"><p style="${italic?'font-style:italic':''}">${esc(content)}</p></div>
+  </div>`;
 }
 
 function msgCard(label, icon, color, msg, isPrincipal) {
-  const id = "msg_" + Math.random().toString(36).slice(2);
-  return `
-    <div class="msg-card" style="border:1px solid ${color}30">
-      <div class="msg-card-bar" style="background:${color}"></div>
-      <div class="msg-card-header">
-        <div class="msg-card-label" style="color:${color}">
-          ${icon} ${label}
-          ${isPrincipal ? `<span class="badge-principal" style="background:${color}">PRINCIPAL</span>` : ""}
-        </div>
-        ${msg ? `<button class="copy-btn" onclick="copyMsg('${id}', this)">copiar</button>` : ""}
+  const id='msg_'+Math.random().toString(36).slice(2);
+  return `<div class="msg-card" style="border:1px solid ${color}30">
+    <div class="msg-card-bar" style="background:${color}"></div>
+    <div class="msg-card-header">
+      <div class="msg-card-label" style="color:${color}">
+        ${icon} ${label}
+        ${isPrincipal?`<span class="badge-principal" style="background:${color}">PRINCIPAL</span>`:''}
       </div>
-      <div class="msg-text" id="${id}">${msg ? `"${esc(msg)}"` : '<span style="color:#4a4a62">—</span>'}</div>
+      ${msg?`<button class="copy-btn" onclick="copyMsg('${id}',this)">copiar</button>`:''}
     </div>
-  `;
+    <div class="msg-text" id="${id}">${msg?`"${esc(msg)}"` : '<span style="color:var(--muted)">—</span>'}</div>
+  </div>`;
+}
+
+function stageBar(estagio) {
+  const stages=[
+    {key:'PRIMEIRO_CONTATO',ico:'👋',lbl:'Contato'},
+    {key:'AQUECENDO',       ico:'💬',lbl:'Aquecendo'},
+    {key:'CONEXAO',         ico:'🔥',lbl:'Conexão'},
+    {key:'ENCONTRO',        ico:'📍',lbl:'Encontro ✅'},
+  ];
+  const idx=stages.findIndex(s=>s.key===estagio);
+  if (idx<0) return '';
+  let html=`<div class="info-block"><div class="info-block-header"><span class="info-block-label">📈 Estágio da conversa</span><div class="info-block-line"></div></div><div class="info-card" style="padding:16px 20px"><div class="stage-bar">`;
+  stages.forEach((s,i)=>{
+    const cls=i<idx?'done':i===idx?'current':'';
+    html+=`<div class="stage-node ${cls}"><div class="stage-circle">${s.ico}</div><div class="stage-lbl">${s.lbl}</div></div>`;
+    if (i<stages.length-1) html+=`<div class="stage-conn ${i<idx?'done':i===idx?'current':''}"></div>`;
+  });
+  html+=`</div></div></div>`;
+  return html;
 }
 
 function copyMsg(id, btn) {
-  const el   = document.getElementById(id);
-  const text = el.textContent.replace(/^"|"$/g, "").trim();
-  navigator.clipboard.writeText(text);
-  btn.textContent = "✓";
-  btn.classList.add("ok");
+  const txt=document.getElementById(id).textContent.replace(/^"|"$/g,'').trim();
+  navigator.clipboard.writeText(txt);
+  btn.textContent='✓'; btn.classList.add('ok');
   showToast();
-  setTimeout(() => { btn.textContent = "copiar"; btn.classList.remove("ok"); }, 1800);
+  setTimeout(()=>{btn.textContent='copiar';btn.classList.remove('ok');},1800);
 }
-
-function showToast() {
-  const t = document.getElementById("toast");
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 1800);
+function showToast(msg='✓ Copiado!') {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
 }
-
 function esc(s) {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\n/g, "<br>");
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+function escA(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-
 loadProfile();
+loadConversations();
+renderConvList();
 updateBtn();
 </script>
-
 </body>
 </html>
