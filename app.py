@@ -229,7 +229,7 @@ APRENDIZADO:
 # ─── PARSER ──────────────────────────────────────────────────────────────────
 
 def parse_response(text):
-    QUOTES = '”“”\''
+    QUOTES = '"""\''
 
     def strip_md(s):
         s = re.sub(r'\*\*(.+?)\*\*', r'\1', s, flags=re.DOTALL)
@@ -240,64 +240,64 @@ def parse_response(text):
         s = re.sub(r'\s*#{1,3}\s*$', '', s)
         return s.strip()
 
-    def get(pattern, default=””):
+    def get(pattern, default=""):
         m = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
         return strip_md(m.group(1)) if m else default
 
     def get_msg(label_re):
-        # Handles: “msg”, **”msg”**, “**msg**”, **msg**
+        # Handles: "msg", **"msg"**, "**msg**", **msg**
         m = re.search(
             rf'{label_re}\s*\n?\s*\*{{0,2}}\s*[{QUOTES}]?(.*?)[{QUOTES}]?\s*\*{{0,2}}\s*(?:\n|$)',
             text, re.IGNORECASE
         )
         if not m:
-            return “”
+            return ""
         return strip_md(m.group(1)).strip(QUOTES).strip()
 
-    modo_raw = get(r”MODO:\s*([\s\S]*?)(?=ANÁLISE|$)”).lower()
-    modo = “instagram”
-    if “tinder” in modo_raw:
-        modo = “tinder”
-    elif “whatsapp” in modo_raw or “whats” in modo_raw:
-        modo = “whatsapp”
+    modo_raw = get(r"MODO:\s*([\s\S]*?)(?=ANÁLISE|$)").lower()
+    modo = "instagram"
+    if "tinder" in modo_raw:
+        modo = "tinder"
+    elif "whatsapp" in modo_raw or "whats" in modo_raw:
+        modo = "whatsapp"
 
-    nao_enviar_raw = get(r”NÃO ENVIAR:\s*([\s\S]*?)(?=APRENDIZADO:|$)”)
+    nao_enviar_raw = get(r"NÃO ENVIAR:\s*([\s\S]*?)(?=APRENDIZADO:|$)")
     nao_enviar = [
         strip_md(re.sub(r'^[-•*]\s*', '', line)).strip(QUOTES).strip()
-        for line in nao_enviar_raw.split(“\n”)
-        if line.strip() and re.match(r'^[-•*“”*]', line.strip())
+        for line in nao_enviar_raw.split("\n")
+        if line.strip() and re.match(r'^[-•*""*]', line.strip())
     ]
 
-    estagio_m = re.search(r”ESTÁGIO:\s*\[?([^\n\[\]]+)\]?”, text, re.IGNORECASE)
-    estagio_raw = estagio_m.group(1).strip().upper() if estagio_m else “”
-    estagio = “”
+    estagio_m = re.search(r"ESTÁGIO:\s*\[?([^\n\[\]]+)\]?", text, re.IGNORECASE)
+    estagio_raw = estagio_m.group(1).strip().upper() if estagio_m else ""
+    estagio = ""
     if estagio_raw:
-        if “PRIMEIRO” in estagio_raw or “CONTATO” in estagio_raw:
-            estagio = “PRIMEIRO_CONTATO”
-        elif “AQUEC” in estagio_raw:
-            estagio = “AQUECENDO”
-        elif “CONEX” in estagio_raw:
-            estagio = “CONEXAO”
-        elif “ENCONTR” in estagio_raw:
-            estagio = “ENCONTRO”
+        if "PRIMEIRO" in estagio_raw or "CONTATO" in estagio_raw:
+            estagio = "PRIMEIRO_CONTATO"
+        elif "AQUEC" in estagio_raw:
+            estagio = "AQUECENDO"
+        elif "CONEX" in estagio_raw:
+            estagio = "CONEXAO"
+        elif "ENCONTR" in estagio_raw:
+            estagio = "ENCONTRO"
         else:
             estagio = estagio_raw
 
-    desc_raw = get(r”DESCRIÇÃO FÍSICA:\s*([\s\S]*?)(?=LEITURA SOCIAL:|$)”)
-    descricao_fisica = “” if desc_raw.strip().upper() in (“N/A”, “N/A.”, “”) else desc_raw
+    desc_raw = get(r"DESCRIÇÃO FÍSICA:\s*([\s\S]*?)(?=LEITURA SOCIAL:|$)")
+    descricao_fisica = "" if desc_raw.strip().upper() in ("N/A", "N/A.", "") else desc_raw
 
     return {
-        “modo”: modo,
-        “analise”:         get(r”ANÁLISE DO PERFIL:\s*([\s\S]*?)(?=DESCRIÇÃO FÍSICA:|LEITURA SOCIAL:|$)”),
-        “descricao_fisica”: descricao_fisica,
-        “leitura”:         get(r”LEITURA SOCIAL:\s*([\s\S]*?)(?=ESTRATÉGIA:|$)”),
-        “estrategia”:      get(r”ESTRATÉGIA:\s*([\s\S]*?)(?=ESTÁGIO:|MENSAGENS:|$)”),
-        “estagio”:         estagio,
-        “segura”:          get_msg(r'1\.\s*SEGURA:'),
-        “estrategica”:     get_msg(r'2\.\s*ESTRATÉGICA:'),
-        “diferente”:       get_msg(r'3\.\s*DIFERENTE:'),
-        “nao_enviar”:      nao_enviar,
-        “aprendizado”:     get(r”APRENDIZADO:\s*([\s\S]*?)$”),
+        "modo": modo,
+        "analise":         get(r"ANÁLISE DO PERFIL:\s*([\s\S]*?)(?=DESCRIÇÃO FÍSICA:|LEITURA SOCIAL:|$)"),
+        "descricao_fisica": descricao_fisica,
+        "leitura":         get(r"LEITURA SOCIAL:\s*([\s\S]*?)(?=ESTRATÉGIA:|$)"),
+        "estrategia":      get(r"ESTRATÉGIA:\s*([\s\S]*?)(?=ESTÁGIO:|MENSAGENS:|$)"),
+        "estagio":         estagio,
+        "segura":          get_msg(r'1\.\s*SEGURA:'),
+        "estrategica":     get_msg(r'2\.\s*ESTRATÉGICA:'),
+        "diferente":       get_msg(r'3\.\s*DIFERENTE:'),
+        "nao_enviar":      nao_enviar,
+        "aprendizado":     get(r"APRENDIZADO:\s*([\s\S]*?)$"),
     }
 
 
