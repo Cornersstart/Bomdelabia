@@ -64,6 +64,43 @@ ELA_NAO_ME_CONHECE: Abordagem completamente fria. Uma frase deve capturar atenç
 
 ---
 
+## INSTAGRAM — MODOS ESPECIALIZADOS
+
+Se MODO INSTAGRAM for fornecido, aplique as regras abaixo com prioridade máxima:
+
+### STORY REPLY
+Você está respondendo ao story dela — ela acabou de postar. A janela de oportunidade dura horas.
+- Referência OBRIGATÓRIA ao conteúdo específico do story (cenário, atividade, emoção, detalhe visual).
+- Tamanho: 1-2 linhas. Story é rápido — textão é sinal de carência.
+- Tom: leve, espontâneo, como se a resposta tivesse surgido naturalmente.
+- Gatilho ideal: humor sutil, curiosidade, comentário inesperado que ela não espera.
+- PROIBIDO: "Que lindo!", "Top 🔥", "Onde é isso?", "Você é linda", emojis sozinhos, qualquer elogio genérico.
+- Objetivo único: ela responder como responde a alguém que já conhece.
+
+### DM FRIA
+Você é um desconhecido na caixa de entrada dela. Ela recebe 20 a 100 DMs por semana.
+- A maioria: "Oi linda", "Posso te conhecer?", "Você tem namorado?", emojis de fogo. Todos ignorados em segundos.
+- Regra absoluta: referência ULTRA-ESPECÍFICA ao perfil (bio, post específico, legenda exata, destaque).
+- Estrutura ideal: [gancho do perfil] → [algo sobre si mesmo em 1 frase] → [abertura natural].
+- Limite rígido: 2-3 linhas. Uma frase forte vence um parágrafo fraco.
+- PROIBIDO: elogio de aparência, "você tem namorado?", pergunta genérica, pressão para responder.
+- Princípio (Greene): seja o único estímulo diferente — o único que não pediu nada, que trouxe algo.
+- Objetivo: curiosidade. Ela deve querer saber quem você é antes de responder.
+
+### PERFIL COMPLETO
+Analise tudo disponível: bio, fotos, destaques, legendas, frequência, estilo visual.
+- Identifique o nicho: fitness / lifestyle / fashion / viagem / trabalho / misto.
+- Diferencie a persona projetada (o que ela quer parecer) da persona real (o que transparece).
+- Determine o tipo de homem que ela tende a responder:
+  * Tom das legendas: intelectual, casual, emocional, humorístico?
+  * Tipo de conteúdo: vaidade vs. propósito, social vs. solitária?
+  * Pistas de parceiro: fotos de casal, ausência suspeita, indiretas?
+- Na ESTRATÉGIA, inclua um plano de 3 passos: o que fazer ANTES de mandar a primeira mensagem
+  (ex: engajar no story, curtir posts recentes, comentar algo específico) e o timing ideal.
+- Defina por onde entrar: story reply / comentário em post / DM direta.
+
+---
+
 ## HISTÓRICO DA CONVERSA
 
 Se HISTÓRICO DA CONVERSA for fornecido no input:
@@ -226,6 +263,14 @@ APRENDIZADO:
 [texto curto]"""
 
 
+# ─── INSTAGRAM MODE LABELS ───────────────────────────────────────────────────
+
+IG_MODE_LABELS = {
+    "story-reply":     "STORY REPLY — respondendo ao story dela",
+    "dm-fria":         "DM FRIA — primeiro contato, ela nao conhece o usuario",
+    "perfil-completo": "PERFIL COMPLETO — analise total do perfil Instagram",
+}
+
 # ─── PARSER ──────────────────────────────────────────────────────────────────
 
 def parse_response(text):
@@ -303,7 +348,7 @@ def parse_response(text):
 
 # ─── API CALL ────────────────────────────────────────────────────────────────
 
-def call_anthropic(text_input, images=None, profile=None, app_hint=None, memory_mode=None, ig_knows_me=None, conversation_history=None):
+def call_anthropic(text_input, images=None, profile=None, app_hint=None, memory_mode=None, ig_knows_me=None, conversation_history=None, ig_mode=None):
     context_parts = []
 
     if profile:
@@ -325,7 +370,9 @@ def call_anthropic(text_input, images=None, profile=None, app_hint=None, memory_
     if memory_mode and memory_mode in memory_labels:
         context_parts.append(f"MEMÓRIA: {memory_labels[memory_mode]}")
 
-    if app_hint == "instagram" and ig_knows_me is not None:
+    if app_hint == "instagram" and ig_mode and ig_mode in IG_MODE_LABELS:
+        context_parts.append(f"MODO INSTAGRAM: {IG_MODE_LABELS[ig_mode]}")
+    elif app_hint == "instagram" and ig_knows_me is not None:
         label = "ELA_ME_CONHECE — ela já sabe quem é o usuário" if ig_knows_me else "ELA_NAO_ME_CONHECE — abordagem completamente fria"
         context_parts.append(f"INSTAGRAM: {label}")
 
@@ -381,6 +428,7 @@ def analyze():
     memory_mode = request.form.get("memory_mode", "primeiro-contato")
     ig_knows_me_raw = request.form.get("ig_knows_me", "")
     ig_knows_me = (ig_knows_me_raw.lower() == "true") if ig_knows_me_raw else None
+    ig_mode = request.form.get("ig_mode", "").strip()
     profile_raw = request.form.get("profile", "{}")
     conversation_history = request.form.get("conversation_history", "").strip()
 
@@ -402,7 +450,7 @@ def analyze():
         return jsonify({"error": "Envie texto ou imagem."}), 400
 
     try:
-        raw = call_anthropic(text_input, images, profile, app_hint, memory_mode, ig_knows_me, conversation_history)
+        raw = call_anthropic(text_input, images, profile, app_hint, memory_mode, ig_knows_me, conversation_history, ig_mode)
         result = parse_response(raw)
         return jsonify({"ok": True, "result": result, "raw": raw})
     except requests.HTTPError as e:
