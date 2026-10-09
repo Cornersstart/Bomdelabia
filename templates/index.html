@@ -365,13 +365,20 @@
     }
     .mem-btn.active { border-color: var(--accent); color: var(--accent); background: #0084ff12; }
 
-    .knows-selector { display: flex; gap: 8px; margin-bottom: 14px; }
-    .knows-btn {
+    .ig-mode-selector { display: flex; gap: 8px; margin-bottom: 14px; }
+    .ig-mode-btn {
       flex: 1; background: var(--surface); border: 1px solid var(--border);
-      color: var(--muted); border-radius: 10px; padding: 9px 4px;
-      font-size: 11px; cursor: pointer; font-family: monospace; text-align: center; transition: all 0.2s;
+      color: var(--muted); border-radius: 12px; padding: 10px 6px 8px;
+      cursor: pointer; font-family: inherit; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      transition: all 0.2s;
     }
-    .knows-btn.active { border-color: var(--instagram); color: var(--instagram); background: #c1358412; }
+    .ig-mode-btn.active { border-color: var(--instagram); background: #c1358412; }
+    .ig-mode-ico { font-size: 18px; }
+    .ig-mode-lbl { font-size: 10px; font-weight: 700; color: var(--text); font-family: monospace; }
+    .ig-mode-desc { font-size: 9px; color: var(--muted); font-family: monospace; }
+    .ig-mode-btn.active .ig-mode-lbl { color: var(--instagram); }
+    .ig-mode-btn.active .ig-mode-desc { color: var(--instagram); opacity: 0.8; }
 
     /* Upload */
     .upload-zone {
@@ -600,11 +607,24 @@
           <button class="mem-btn"        data-mem="reaquecendo"      onclick="selectMemory('reaquecendo')">🔥<br>Reaquecer</button>
         </div>
 
-        <div id="igKnowsSection" style="display:none">
-          <span class="section-label">ELA JÁ TE CONHECE?</span>
-          <div class="knows-selector">
-            <button class="knows-btn active" data-knows="false" onclick="selectKnows(false)">👤 Não me conhece</button>
-            <button class="knows-btn"        data-knows="true"  onclick="selectKnows(true)">✨ Já me conhece</button>
+        <div id="igModeSection" style="display:none">
+          <span class="section-label">MODO INSTAGRAM</span>
+          <div class="ig-mode-selector">
+            <button class="ig-mode-btn active" data-igm="story-reply"     onclick="selectIgMode('story-reply')">
+              <span class="ig-mode-ico">📸</span>
+              <span class="ig-mode-lbl">Story Reply</span>
+              <span class="ig-mode-desc">Responder ao story dela</span>
+            </button>
+            <button class="ig-mode-btn"        data-igm="dm-fria"         onclick="selectIgMode('dm-fria')">
+              <span class="ig-mode-ico">💬</span>
+              <span class="ig-mode-lbl">DM Fria</span>
+              <span class="ig-mode-desc">Ela não me conhece</span>
+            </button>
+            <button class="ig-mode-btn"        data-igm="perfil-completo" onclick="selectIgMode('perfil-completo')">
+              <span class="ig-mode-ico">👤</span>
+              <span class="ig-mode-lbl">Perfil Completo</span>
+              <span class="ig-mode-desc">Análise total + estratégia</span>
+            </button>
           </div>
         </div>
 
@@ -705,6 +725,7 @@ let currentView    = 'convs';
 let selectedApp    = 'auto';
 let selectedMemory = 'primeiro-contato';
 let igKnowsMe      = false;
+let igMode         = 'story-reply';
 let imageFiles     = [];
 let profile        = {};
 let conversations  = [];
@@ -1106,16 +1127,16 @@ function toggleProfile() {
 function selectApp(app) {
   selectedApp = app;
   document.querySelectorAll('.app-btn').forEach(b => { b.className='app-btn'; if(b.dataset.app===app) b.classList.add(`active-${app}`); });
-  document.getElementById('igKnowsSection').style.display = app==='instagram' ? 'block' : 'none';
+  document.getElementById('igModeSection').style.display = app==='instagram' ? 'block' : 'none';
   updateBtn();
 }
 function selectMemory(mem) {
   selectedMemory = mem;
   document.querySelectorAll('.mem-btn').forEach(b => b.classList.toggle('active', b.dataset.mem===mem));
 }
-function selectKnows(knows) {
-  igKnowsMe = knows;
-  document.querySelectorAll('.knows-btn').forEach(b => b.classList.toggle('active', b.dataset.knows===String(knows)));
+function selectIgMode(mode) {
+  igMode = mode;
+  document.querySelectorAll('.ig-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.igm===mode));
 }
 
 function triggerUpload() { document.getElementById('fileInput').click(); }
@@ -1171,6 +1192,7 @@ async function doAnalyze() {
   fd.append('app_hint',             selectedApp);
   fd.append('memory_mode',          selectedMemory);
   fd.append('ig_knows_me',          String(igKnowsMe));
+  if (selectedApp === 'instagram') fd.append('ig_mode', igMode);
   fd.append('profile',              JSON.stringify(profile));
   fd.append('conversation_history', convHist);
   imageFiles.forEach(f => fd.append('images', f));
