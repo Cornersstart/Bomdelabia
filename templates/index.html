@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Reply Coach</title>
+  <title>Reply Coach — Instagram</title>
   <style>
     :root {
       --bg: #f0f2f5;
@@ -13,10 +13,8 @@
       --text: #050505;
       --muted: #65676b;
       --hover: #f2f2f2;
-      --accent: #0084ff;
-      --tinder: #ff4458;
+      --accent: #c13584;
       --instagram: #c13584;
-      --whatsapp: #25d366;
       --nav-h: 56px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -523,12 +521,9 @@
       <span class="modal-label">Nome dela</span>
       <input class="modal-input" id="newConvName" type="text" placeholder="Ju, Ana, Laís..."
         oninput="updateModalConfirm()" onkeydown="if(event.key==='Enter')confirmNewConv()"/>
-      <span class="modal-label">APP</span>
-      <div class="modal-apps">
-        <button class="modal-app-btn sel-auto" data-mapp="auto"      onclick="selectModalApp('auto')">🤖 Auto</button>
-        <button class="modal-app-btn"          data-mapp="tinder"    onclick="selectModalApp('tinder')">❤️ Tinder</button>
-        <button class="modal-app-btn"          data-mapp="instagram" onclick="selectModalApp('instagram')">📷 Insta</button>
-        <button class="modal-app-btn"          data-mapp="whatsapp"  onclick="selectModalApp('whatsapp')">💬 Whats</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:#c1358412;border:1px solid #c1358430;border-radius:10px">
+        <span style="font-size:16px">📷</span>
+        <span style="font-size:11px;font-family:monospace;color:var(--instagram);font-weight:700">INSTAGRAM — MODO CAFAJESTE</span>
       </div>
       <button class="modal-confirm" id="modalConfirmBtn" onclick="confirmNewConv()" disabled>Criar conversa</button>
     </div>
@@ -559,9 +554,9 @@
       <div class="container">
 
         <div class="header">
-          <div class="header-tag">SOCIAL INTELLIGENCE ENGINE</div>
-          <h1>Reply Coach <span>V5</span></h1>
-          <p class="subtitle">Tinder · Instagram · WhatsApp — psicologia aplicada.</p>
+          <div class="header-tag">INSTAGRAM INTELLIGENCE ENGINE</div>
+          <h1>Reply Coach <span>V6</span></h1>
+          <p class="subtitle">📷 Instagram · modo cafajeste calibrado.</p>
         </div>
 
         <button class="profile-toggle" id="profileToggle" onclick="toggleProfile()">
@@ -577,10 +572,7 @@
             <div>
               <span class="section-label">App</span>
               <select id="pApp" oninput="updateProfileLabel()">
-                <option value="">Detectar auto</option>
-                <option value="Tinder">Tinder</option>
-                <option value="Instagram">Instagram</option>
-                <option value="WhatsApp">WhatsApp</option>
+                <option value="Instagram" selected>Instagram</option>
               </select>
             </div>
           </div>
@@ -592,22 +584,7 @@
           </div>
         </div>
 
-        <span class="section-label">APP</span>
-        <div class="app-selector">
-          <button class="app-btn active-auto" data-app="auto"      onclick="selectApp('auto')">🤖 Auto</button>
-          <button class="app-btn"             data-app="tinder"    onclick="selectApp('tinder')">❤️ Tinder</button>
-          <button class="app-btn"             data-app="instagram" onclick="selectApp('instagram')">📷 Instagram</button>
-          <button class="app-btn"             data-app="whatsapp"  onclick="selectApp('whatsapp')">💬 WhatsApp</button>
-        </div>
-
-        <span class="section-label">MOMENTO DA CONVERSA</span>
-        <div class="memory-selector">
-          <button class="mem-btn active" data-mem="primeiro-contato" onclick="selectMemory('primeiro-contato')">👋<br>Primeiro<br>contato</button>
-          <button class="mem-btn"        data-mem="em-andamento"     onclick="selectMemory('em-andamento')">💬<br>Já<br>conversamos</button>
-          <button class="mem-btn"        data-mem="reaquecendo"      onclick="selectMemory('reaquecendo')">🔥<br>Reaquecer</button>
-        </div>
-
-        <div id="igModeSection" style="display:none">
+        <div id="igModeSection">
           <span class="section-label">MODO INSTAGRAM</span>
           <div class="ig-mode-selector">
             <button class="ig-mode-btn active" data-igm="story-reply"     onclick="selectIgMode('story-reply')">
@@ -628,7 +605,7 @@
           </div>
         </div>
 
-        <span class="section-label">UPLOADS (prints do perfil / story / conversa)</span>
+        <span class="section-label" style="margin-top:4px">UPLOADS (prints do perfil / story / conversa)</span>
         <div class="upload-zone" id="uploadZone"
           onclick="triggerUpload()"
           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
@@ -643,7 +620,7 @@
 
         <span class="section-label" style="margin-top:4px">DESCREVA / COLE O PERFIL OU CONTEXTO</span>
         <textarea id="textInput" rows="4"
-          placeholder="• Tinder: bio dela + fotos&#10;• Instagram: story que ela postou&#10;• WhatsApp: situação atual"
+          placeholder="• Bio dela + número de posts/seguidores&#10;• Story que ela postou (descreva o que tem no story)&#10;• Conversa até agora&#10;• Link ou prints do perfil"
           oninput="updateBtn()"></textarea>
 
         <div class="conv-section">
@@ -722,7 +699,7 @@ Ela: você deveria ir, a vista é demais 😍"></textarea>
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let currentView    = 'convs';
-let selectedApp    = 'auto';
+let selectedApp    = 'instagram';
 let selectedMemory = 'primeiro-contato';
 let igKnowsMe      = false;
 let igMode         = 'story-reply';
@@ -735,12 +712,10 @@ const MAX_IMAGES = 4;
 const LS_CONVS   = 'rc-conversations';
 const LS_PROFILE = 'rc-profile';
 
-const APP_COLORS = { tinder:'#ff4458', instagram:'#c13584', whatsapp:'#25d366', auto:'#0084ff', '':'#0084ff' };
-const MODE_COLORS = { tinder:'#ff4458', instagram:'#c13584', whatsapp:'#25d366' };
+const APP_COLORS = { instagram:'#c13584', auto:'#c13584', '':'#c13584' };
+const MODE_COLORS = { instagram:'#c13584' };
 const MODE_LABELS = {
-  tinder:    { emoji:'❤️', label:'TINDER' },
   instagram: { emoji:'📷', label:'INSTAGRAM' },
-  whatsapp:  { emoji:'💬', label:'WHATSAPP' },
 };
 
 // ─── VIEWS ───────────────────────────────────────────────────────────────────
@@ -864,21 +839,17 @@ function openConv(id) { currentConvId = id; showView('chat'); }
 function backToConvs() { currentConvId = null; showView('convs'); }
 
 // ─── NEW CONV MODAL ───────────────────────────────────────────────────────────
-let newConvApp = 'auto';
+let newConvApp = 'instagram';
 function openNewConvModal() {
-  newConvApp = 'auto';
+  newConvApp = 'instagram';
   document.getElementById('newConvName').value = '';
-  document.querySelectorAll('.modal-app-btn').forEach(b => { b.className='modal-app-btn'; if(b.dataset.mapp==='auto') b.classList.add('sel-auto'); });
   document.getElementById('modalConfirmBtn').disabled = true;
   document.getElementById('newConvModal').classList.add('open');
   setTimeout(() => document.getElementById('newConvName').focus(), 300);
 }
 function closeNewConvModal() { document.getElementById('newConvModal').classList.remove('open'); }
 function handleModalBackdrop(e) { if(e.target === document.getElementById('newConvModal')) closeNewConvModal(); }
-function selectModalApp(app) {
-  newConvApp = app;
-  document.querySelectorAll('.modal-app-btn').forEach(b => { b.className='modal-app-btn'; if(b.dataset.mapp===app) b.classList.add(`sel-${app}`); });
-}
+function selectModalApp(app) { newConvApp = app; }
 function updateModalConfirm() {
   const name = document.getElementById('newConvName').value.trim();
   document.getElementById('modalConfirmBtn').disabled = !name;
@@ -1059,10 +1030,11 @@ async function casSubmit() {
   const hist = conv.messages.map(m => `${m.side==='me'?'Você':'Ela'}: ${m.text}`).join('\n');
   const fd = new FormData();
   fd.append('text',                 txt || `Analisar perfil — ${conv.name}`);
-  fd.append('app_hint',             conv.app || 'auto');
+  fd.append('app_hint',             'instagram');
   fd.append('memory_mode',          casMemory);
   fd.append('ig_knows_me',          'false');
-  fd.append('profile',              JSON.stringify({ name: conv.name, app: conv.app }));
+  fd.append('ig_mode',              igMode);
+  fd.append('profile',              JSON.stringify({ name: conv.name, app: 'instagram' }));
   if (hist) fd.append('conversation_history', hist);
   casImages.forEach(f => fd.append('images', f));
   try {
@@ -1126,8 +1098,6 @@ function toggleProfile() {
 
 function selectApp(app) {
   selectedApp = app;
-  document.querySelectorAll('.app-btn').forEach(b => { b.className='app-btn'; if(b.dataset.app===app) b.classList.add(`active-${app}`); });
-  document.getElementById('igModeSection').style.display = app==='instagram' ? 'block' : 'none';
   updateBtn();
 }
 function selectMemory(mem) {
@@ -1175,7 +1145,7 @@ function updateBtn() {
   const btn=document.getElementById('analyzeBtn');
   const can=!!txt||imageFiles.length>0;
   btn.disabled=!can;
-  const color=selectedApp!=='auto' ? (MODE_COLORS[selectedApp]||'#0084ff') : '#0084ff';
+  const color='#c13584';
   btn.style.background=can?`linear-gradient(135deg,${color},${color}aa)`:'';
   btn.style.boxShadow=can?`0 4px 24px ${color}33`:'none';
 }
@@ -1189,10 +1159,10 @@ async function doAnalyze() {
   const convHist = document.getElementById('convHistoryTA').value.trim();
   const fd = new FormData();
   if (text) fd.append('text', text);
-  fd.append('app_hint',             selectedApp);
+  fd.append('app_hint',             'instagram');
   fd.append('memory_mode',          selectedMemory);
-  fd.append('ig_knows_me',          String(igKnowsMe));
-  if (selectedApp === 'instagram') fd.append('ig_mode', igMode);
+  fd.append('ig_knows_me',          'false');
+  fd.append('ig_mode',              igMode);
   fd.append('profile',              JSON.stringify(profile));
   fd.append('conversation_history', convHist);
   imageFiles.forEach(f => fd.append('images', f));
@@ -1204,7 +1174,7 @@ async function doAnalyze() {
     // Auto-save
     const name = profile.name || document.getElementById('pName').value.trim();
     if (name) {
-      const app = selectedApp!=='auto' ? selectedApp : (profile.app?profile.app.toLowerCase():'auto');
+      const app = 'instagram';
       upsertConversation(name, app, parseConvHistory(convHist), data.result.estagio, data.result);
     }
   } catch(e) {
@@ -1216,8 +1186,7 @@ async function doAnalyze() {
 function setLoading(on) {
   document.getElementById('spinner').style.display=on?'block':'none';
   document.getElementById('analyzeBtn').disabled=on;
-  const color=selectedApp!=='auto'?(MODE_COLORS[selectedApp]||'#0084ff'):'#0084ff';
-  document.getElementById('spinnerEl').style.borderTopColor=color;
+  document.getElementById('spinnerEl').style.borderTopColor='#c13584';
   document.getElementById('analyzeBtn').textContent=on?'⏳ Analisando...':'⚡ Analisar & gerar mensagens';
 }
 
@@ -1310,6 +1279,7 @@ function escA(s) {
 loadProfile();
 loadConversations();
 renderConvList();
+selectIgMode('story-reply');
 updateBtn();
 </script>
 </body>
