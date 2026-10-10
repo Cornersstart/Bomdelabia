@@ -265,30 +265,59 @@
 
     /* AI block in chat */
     .ai-block {
-      background: #fff8f0; border: 1px solid #ffe0b2;
-      border-radius: 14px; padding: 12px 14px; margin: 12px 0;
+      background: white; border: 1.5px solid var(--instagram);
+      border-radius: 16px; padding: 14px 14px 10px; margin: 12px 0;
     }
     .ai-block-hdr {
-      font-size: 9px; font-weight: 700; color: #e65100;
+      font-size: 9px; font-weight: 700; color: var(--instagram);
       letter-spacing: 1.5px; font-family: monospace; margin-bottom: 10px;
       text-transform: uppercase;
     }
+    /* Main message — estratégica */
+    .ai-main-msg {
+      background: #c1358408; border: 1.5px solid #c1358455;
+      border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+    }
+    .ai-main-lbl {
+      font-size: 8px; font-family: monospace; letter-spacing: 2px; color: var(--instagram);
+      text-transform: uppercase; font-weight: 800; margin-bottom: 6px; display: block;
+    }
+    .ai-main-txt {
+      font-size: 16px; line-height: 1.55; color: var(--text); font-style: italic; margin-bottom: 10px;
+    }
+    .ai-main-actions { display: flex; gap: 8px; }
+    .ai-copy-btn {
+      flex: 1; padding: 10px; background: var(--instagram); color: white;
+      border: none; border-radius: 10px; font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: opacity 0.2s;
+    }
+    .ai-copy-btn:active { opacity: 0.8; }
+    .ai-sent-btn {
+      padding: 10px 14px; background: #f0f0f0; color: var(--muted);
+      border: none; border-radius: 10px; font-size: 12px;
+      cursor: pointer; font-family: monospace; font-weight: 700;
+    }
+    /* Alt messages */
+    .ai-alts-hdr {
+      font-size: 8px; color: var(--muted); font-family: monospace;
+      letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px;
+    }
     .ai-sug {
       display: flex; align-items: flex-start; gap: 8px;
-      padding: 8px 10px; background: white;
-      border: 1px solid var(--border); border-radius: 12px;
-      margin-bottom: 6px; cursor: pointer; transition: background 0.15s;
+      padding: 8px 10px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 10px;
+      margin-bottom: 5px;
     }
-    .ai-sug:hover { background: #f0f8ff; border-color: var(--accent); }
-    .ai-sug-ico { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+    .ai-sug-ico { font-size: 13px; flex-shrink: 0; margin-top: 2px; }
     .ai-sug-body { flex: 1; min-width: 0; }
     .ai-sug-lbl { font-size: 8px; color: var(--muted); font-family: monospace; letter-spacing: 1px; display: block; margin-bottom: 2px; text-transform: uppercase; }
-    .ai-sug-txt { font-size: 14px; line-height: 1.5; color: var(--text); font-style: italic; }
+    .ai-sug-txt { font-size: 13px; line-height: 1.5; color: var(--text); font-style: italic; }
     .ai-use-btn {
-      font-size: 10px; background: var(--accent); color: white;
-      border: none; border-radius: 10px; padding: 3px 9px;
+      font-size: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+      border-radius: 8px; padding: 3px 9px;
       cursor: pointer; font-family: monospace; flex-shrink: 0; font-weight: 700;
     }
+    .ai-use-btn:active { background: var(--bg); }
 
     .chat-date-sep { text-align: center; font-size: 11px; color: var(--muted); margin: 8px 0 4px; font-family: monospace; }
 
@@ -904,23 +933,33 @@ function bubbleHtml(side, text, letter, color) {
 }
 
 function aiBlockHtml(r) {
-  const msgs = [
-    r.segura      ? { ico:'🛡️', lbl:'SEGURA',      txt:r.segura }      : null,
-    r.estrategica ? { ico:'⚡',  lbl:'ESTRATÉGICA', txt:r.estrategica } : null,
-    r.diferente   ? { ico:'😏', lbl:'DIFERENTE',    txt:r.diferente }   : null,
+  const main = r.estrategica || r.segura || r.diferente || '';
+  const mainId = 'aim_' + Math.random().toString(36).slice(2);
+  const alts = [
+    r.segura    && r.segura    !== main ? { ico:'🛡️', lbl:'SEGURA',   txt:r.segura }    : null,
+    r.diferente && r.diferente !== main ? { ico:'😏', lbl:'DIFERENTE', txt:r.diferente } : null,
   ].filter(Boolean);
-  if (!msgs.length) return '';
+  if (!main) return '';
   return `
     <div class="ai-block">
-      <div class="ai-block-hdr">⚡ SUGESTÕES DO REPLY COACH</div>
-      ${msgs.map(m => `
+      <div class="ai-block-hdr">📲 MENSAGEM PRONTA — MODO CAFAJESTE</div>
+      <div class="ai-main-msg">
+        <span class="ai-main-lbl">⚡ ESTRATÉGICA · PRINCIPAL</span>
+        <div class="ai-main-txt" id="${mainId}">"${esc(main)}"</div>
+        <div class="ai-main-actions">
+          <button class="ai-copy-btn" onclick="copyAiMain('${mainId}',this)">📋 Copiar mensagem</button>
+          <button class="ai-sent-btn" onclick="useSugg('${escA(main)}',this)">✓ Enviei</button>
+        </div>
+      </div>
+      ${alts.length ? `<div class="ai-alts-hdr">ALTERNATIVAS</div>` : ''}
+      ${alts.map(m => `
         <div class="ai-sug">
           <span class="ai-sug-ico">${m.ico}</span>
           <div class="ai-sug-body">
             <span class="ai-sug-lbl">${m.lbl}</span>
             <div class="ai-sug-txt">"${esc(m.txt)}"</div>
           </div>
-          <button class="ai-use-btn" onclick="useSugg('${escA(m.txt)}')">Enviei</button>
+          <button class="ai-use-btn" onclick="copyAltMsg('${escA(m.txt)}',this)">📋</button>
         </div>`).join('')}
     </div>`;
 }
@@ -941,17 +980,39 @@ function addHerMsg() {
   c.scrollTop = c.scrollHeight;
 }
 
-function useSugg(txt) {
+function useSugg(txt, btn) {
   const conv = getConv(currentConvId);
   if (!conv) return;
   conv.messages.push({ side:'me', text:txt, at:Date.now() });
   conv.updatedAt = Date.now();
   saveConversations();
   const c = document.getElementById('chatMessages');
-  c.insertAdjacentHTML('beforeend', bubbleHtml('me', txt, '', '#0084ff'));
+  c.insertAdjacentHTML('beforeend', bubbleHtml('me', txt, '', APP_COLORS['instagram']));
   c.scrollTop = c.scrollHeight;
   document.getElementById('chatHerInput').focus();
-  showToast('✓ Registrada!');
+  if (btn) { const orig = btn.textContent; btn.textContent = '✓ Ok!'; setTimeout(() => btn.textContent = orig, 1600); }
+  showToast('✓ Mensagem registrada!');
+}
+
+function copyAiMain(id, btn) {
+  const txt = document.getElementById(id).textContent.replace(/^"|"$/g,'').trim();
+  navigator.clipboard.writeText(txt).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copiado!';
+    btn.style.background = '#22c55e';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1800);
+  });
+  // Also pre-fill input so it's ready
+  document.getElementById('chatHerInput').placeholder = txt.substring(0, 40) + '…';
+  showToast('📋 Mensagem copiada!');
+}
+
+function copyAltMsg(txt, btn) {
+  navigator.clipboard.writeText(txt);
+  const orig = btn.textContent;
+  btn.textContent = '✓';
+  setTimeout(() => btn.textContent = orig, 1400);
+  showToast('📋 Copiado!');
 }
 
 function analyzeFromChat() { openCasSheet(); }
@@ -1051,6 +1112,13 @@ async function casSubmit() {
     const c = document.getElementById('chatMessages');
     c.insertAdjacentHTML('beforeend', aiBlockHtml(data.result));
     c.scrollTop = c.scrollHeight;
+    // Pre-fill input with strategic message
+    const mainMsg = data.result.estrategica || data.result.segura || '';
+    if (mainMsg) {
+      const inp = document.getElementById('chatHerInput');
+      inp.value = '';
+      inp.placeholder = mainMsg;
+    }
   } catch(e) { alert('Erro: ' + e.message); }
   finally { btn.textContent = '⚡ Analisar'; btn.disabled = false; }
 }
