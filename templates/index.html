@@ -321,10 +321,46 @@
 
     .chat-date-sep { text-align: center; font-size: 11px; color: var(--muted); margin: 8px 0 4px; font-family: monospace; }
 
+    /* ── CHAT PENDING IMAGES ── */
+    .chat-pending-imgs {
+      display: none; flex-wrap: nowrap; gap: 8px; overflow-x: auto;
+      padding: 8px 12px 0; background: var(--surface);
+      border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    .chat-pending-imgs.has-imgs { display: flex; }
+    .cpi-thumb {
+      position: relative; width: 56px; height: 56px; border-radius: 10px;
+      overflow: hidden; border: 1.5px solid var(--instagram); flex-shrink: 0;
+    }
+    .cpi-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cpi-rm {
+      position: absolute; top: 2px; right: 2px; background: #000b;
+      color: white; font-size: 9px; width: 15px; height: 15px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: none; line-height: 1;
+    }
+    .cpi-add {
+      width: 56px; height: 56px; border-radius: 10px; border: 2px dashed var(--border);
+      background: var(--bg); color: #bbb; font-size: 20px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .chat-analyze-quick {
+      margin: 6px 12px 0; padding: 10px; background: var(--instagram); color: white;
+      border: none; border-radius: 10px; font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: inherit; width: calc(100% - 24px); display: none;
+    }
+    .chat-analyze-quick.visible { display: block; }
+
     .chat-input-bar {
       display: flex; align-items: center; gap: 8px;
       padding: 8px 12px; background: var(--surface);
       border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    .chat-upload-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg); border: 1px solid var(--border);
+      font-size: 18px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
     }
     .chat-input-bar input {
       flex: 1; background: var(--bg); border: none;
@@ -570,7 +606,17 @@
       <button class="chat-analyze-btn" id="chatAnalyzeBtn" onclick="analyzeFromChat()">⚡ Analisar</button>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
+
+    <!-- Pending images strip -->
+    <div class="chat-pending-imgs" id="chatPendingImgs"></div>
+    <!-- Quick analyze button (shows when images pending) -->
+    <button class="chat-analyze-quick" id="chatAnalyzeQuick" onclick="analyzeFromChat()">
+      ⚡ Analisar prints
+    </button>
+
     <div class="chat-input-bar">
+      <input type="file" id="chatImgInput" accept="image/*" multiple style="display:none" onchange="chatOnImgChange(event)"/>
+      <button class="chat-upload-btn" onclick="document.getElementById('chatImgInput').click()" title="Adicionar print">📎</button>
       <input id="chatHerInput" type="text" placeholder="Ela respondeu..."
         onkeydown="if(event.key==='Enter')addHerMsg()"/>
       <button class="chat-send-btn" onclick="addHerMsg()">↑</button>
@@ -1015,7 +1061,66 @@ function copyAltMsg(txt, btn) {
   showToast('📋 Copiado!');
 }
 
-function analyzeFromChat() { openCasSheet(); }
+// ─── CHAT PENDING IMAGES ─────────────────────────────────────────────────────
+let chatPendingImgs = [];
+const CHAT_IMG_MAX = 4;
+
+function chatOnImgChange(e) {
+  for (const f of Array.from(e.target.files)) {
+    if (!f.type.startsWith('image/')) continue;
+    if (chatPendingImgs.length >= CHAT_IMG_MAX) break;
+    chatPendingImgs.push(f);
+  }
+  e.target.value = '';
+  chatRenderPending();
+}
+
+function chatRemovePending(i) {
+  chatPendingImgs.splice(i, 1);
+  chatRenderPending();
+}
+
+function chatRenderPending() {
+  const strip = document.getElementById('chatPendingImgs');
+  const quickBtn = document.getElementById('chatAnalyzeQuick');
+  strip.innerHTML = '';
+  chatPendingImgs.forEach((f, i) => {
+    const url = URL.createObjectURL(f);
+    const w = document.createElement('div'); w.className = 'cpi-thumb';
+    w.innerHTML = `<img src="${url}"/><button class="cpi-rm" onclick="chatRemovePending(${i})">✕</button>`;
+    strip.appendChild(w);
+  });
+  if (chatPendingImgs.length < CHAT_IMG_MAX) {
+    const b = document.createElement('div'); b.className = 'cpi-add'; b.textContent = '+';
+    b.onclick = () => document.getElementById('chatImgInput').click();
+    strip.appendChild(b);
+  }
+  const hasImgs = chatPendingImgs.length > 0;
+  strip.classList.toggle('has-imgs', hasImgs);
+  quickBtn.classList.toggle('visible', hasImgs);
+}
+
+function analyzeFromChat() {
+  if (chatPendingImgs.length > 0) {
+    // Pass pending images directly into cas sheet
+    casImages = [...chatPendingImgs];
+    chatPendingImgs = [];
+    chatRenderPending();
+    // Open sheet with images already loaded
+    const conv = getConv(currentConvId);
+    if (!conv) return;
+    const autoMem = ['CONEXAO','ENCONTRO'].includes(conv.stage) ? 'em-andamento'
+                  : conv.stage === 'AQUECENDO' ? 'em-andamento' : 'primeiro-contato';
+    casMemory = autoMem;
+    document.querySelectorAll('.cas-mem').forEach(b => b.classList.toggle('active', b.dataset.cmem === autoMem));
+    document.getElementById('casText').value = '';
+    casRenderThumbs();
+    casUpdateBtn();
+    document.getElementById('casBackdrop').classList.add('open');
+  } else {
+    openCasSheet();
+  }
+}
 
 // ─── CHAT ANALYZE SHEET ───────────────────────────────────────────────────────
 let casImages = [];
